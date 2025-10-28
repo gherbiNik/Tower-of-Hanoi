@@ -2,7 +2,7 @@
  * @file		main.cpp
  * @brief	Client application (that uses the graphics engine)
  *
- * @author	Achille Peternier (C) SUPSI [achille.peternier@supsi.ch] << change this to your group members
+ * @authors	 Andrea Perlini, Nicholas Gherbi, Andrea Domenico Trapani << change this to your group members
  */
 
 
