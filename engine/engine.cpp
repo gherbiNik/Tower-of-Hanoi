@@ -2,7 +2,7 @@
  * @file		engine.cpp
  * @brief	Graphics engine main file
  *
- * @author	Achille Peternier (C) SUPSI [achille.peternier@supsi.ch] << change this to your group members
+ * @author	Andrea Perlini, Nicholas Gherbi, Andrea Domenico Trapani
  */
 
 
