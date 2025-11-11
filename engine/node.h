@@ -11,25 +11,33 @@
 class Node : public Object {
 public:
     Node(unsigned int id, const std::string& name);
+    virtual ~Node() = default;
 
-    glm::mat4 getM() const { return transformationMatrix; }
-    void setM(const glm::mat4& newMatrix) { transformationMatrix = newMatrix; }
+    // Transformation matrix accessors
+    glm::mat4 getM() const;
+    void setM(const glm::mat4& newMatrix);
 
+    // Transformation methods
     void rotate(float angle, const glm::vec3& axis);
     void scale(const glm::vec3& factor);
     void translate(const glm::vec3& translation);
 
+    // World matrix computation
     glm::mat4 getWorldFinalMatrix() const;
 
+    // Override render from Object
     void render() override;
 
-    Node* getParent() const { return parent; }
-    void setParent(Node* newParent) { parent = newParent; }
+    // Parent-child hierarchy
+    Node* getParent() const;
+    void setParent(Node* newParent);
 
     void addChild(Node* child);
+    void removeChild(Node* child);
     Node* getChild(int index) const;
-    unsigned int getNumChildren() const { return (unsigned int)children.size(); }
+    unsigned int getNumChildren() const;
 
+    // Tree search
     Node* findByName(const std::string& nodeName);
 
 private:

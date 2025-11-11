@@ -50,7 +50,7 @@
       <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-     <AdditionalIncludeDirectories>..\dependencies\glm\include;..\dependencies\freeglut\include</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\dependencies\glm\include;..\dependencies\freeglut\include</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -84,9 +84,16 @@
     <ClInclude Include="base.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="engine.h" />
+    <ClInclude Include="infiniteLight.h" />
+    <ClInclude Include="light.h" />
+    <ClInclude Include="list.h" />
+    <ClInclude Include="material.h" />
     <ClInclude Include="mesh.h" />
     <ClInclude Include="node.h" />
     <ClInclude Include="object.h" />
+    <ClInclude Include="omnidirectionalLight.h" />
+    <ClInclude Include="spotLight.h" />
+    <ClInclude Include="texture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

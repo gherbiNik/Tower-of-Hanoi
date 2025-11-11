@@ -1,6 +1,9 @@
 #pragma once
 
 #include <string>
+#include "camera.h"
+#include "list.h"
+
 
 /**
  * @brief Implementato come Singleton.
@@ -21,5 +24,5 @@ public:
     void loadFromFile(const std::string& fileName);
     void swapBuffers();
     void mainEventLoop();
-    void render();
+    void render(Camera* camera, List* list);
 };

@@ -12,8 +12,8 @@ public:
 
     virtual void render() = 0;
 
-    virtual std::string getName() const { return name; }
-    virtual unsigned int getId() const { return uid; }
+    virtual std::string getName() const;
+    virtual unsigned int getId() const;
 
     virtual ~Object() = default;
 

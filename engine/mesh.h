@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Node.h"
+#include "node.h"
+#include "material.h"
 #include <vector>
 #include <glm/glm.hpp>
 
@@ -11,11 +12,18 @@ class Mesh : public Node {
 public:
     Mesh(unsigned int id, const std::string& name);
 
-    void setVertices(const std::vector<float>& newVertices);
-    const std::vector<float>& getVertices() const { return vertices; }
+    // Getter
+    const std::vector<float>& getVertices() const;
+    Material* getMaterial() const;
+
+    // Setter
+    void setVertices(const std::vector<float>& vertices);
+    void setMaterial(Material* material);
 
     void render() override;
 
 private:
     std::vector<float> vertices;
+    Material* material;
+
 };
