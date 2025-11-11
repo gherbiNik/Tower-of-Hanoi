@@ -79,7 +79,12 @@
     <ClCompile Include="engine.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="base.h" />
+    <ClInclude Include="camera.h" />
     <ClInclude Include="engine.h" />
+    <ClInclude Include="mesh.h" />
+    <ClInclude Include="node.h" />
+    <ClInclude Include="object.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
