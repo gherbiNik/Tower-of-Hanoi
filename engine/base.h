@@ -21,8 +21,4 @@ public:
 
     void init();
     void free();
-    void loadFromFile(const std::string& fileName);
-    void swapBuffers();
-    void mainEventLoop();
-    void render(Camera* camera, List* list);
-};
+    };

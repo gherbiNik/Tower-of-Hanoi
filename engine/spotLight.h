@@ -1,8 +1,9 @@
 #pragma once
 
 #include "light.h"
+#include "libConfig.h"
 
-class SpotLight : public Light
+class ENG_API SpotLight : public Light
 {
 public:
 	SpotLight();

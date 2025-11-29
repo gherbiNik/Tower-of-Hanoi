@@ -4,11 +4,12 @@
 #include "material.h"
 #include <vector>
 #include <glm/glm.hpp>
+#include "libConfig.h"
 
 /**
  * @brief Rappresenta un oggetto geometrico (una maglia) con vertici.
  */
-class Mesh : public Node {
+class ENG_API Mesh : public Node {
 public:
     Mesh(unsigned int id, const std::string& name);
 

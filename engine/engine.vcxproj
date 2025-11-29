@@ -78,10 +78,20 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="camera.cpp" />
     <ClCompile Include="engine.cpp" />
+    <ClCompile Include="infiniteLight.cpp" />
+    <ClCompile Include="light.cpp" />
+    <ClCompile Include="list.cpp" />
+    <ClCompile Include="material.cpp" />
+    <ClCompile Include="mesh.cpp" />
+    <ClCompile Include="node.cpp" />
+    <ClCompile Include="object.cpp" />
+    <ClCompile Include="omnidirectionLight.cpp" />
+    <ClCompile Include="spotLight.cpp" />
+    <ClCompile Include="texture.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="base.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="engine.h" />
     <ClInclude Include="infiniteLight.h" />

@@ -1,7 +1,8 @@
 #pragma once
 #include "light.h"
+#include "libConfig.h"
 
-class OmnidirectionalLight : public Light
+class ENG_API OmnidirectionalLight : public Light
 {
 public:
 	OmnidirectionalLight();

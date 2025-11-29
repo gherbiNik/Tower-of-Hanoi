@@ -2,8 +2,9 @@
 #include "object.h"
 #include "texture.h"
 #include "glm/glm.hpp"
+#include "libConfig.h"
 
-class Material : public Object {
+class ENG_API Material : public Object {
 public:
    Material(unsigned int id, const std::string& name);  // Added constructor
    ~Material();

@@ -4,11 +4,12 @@
 #include <vector>
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
+#include "libConfig.h"
 
 /**
  * @brief Rappresenta un nodo nel grafo della scena, gestisce trasformazioni e gerarchia.
  */
-class Node : public Object {
+class ENG_API Node : public Object {
 public:
     Node(unsigned int id, const std::string& name);
     virtual ~Node() = default;

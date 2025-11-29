@@ -13,7 +13,11 @@
 //////////////
 
    // C/C++:         
-   #include <memory> 
+   #include <memory>
+#include <string>
+#include "camera.h"
+#include "list.h"
+#include "libConfig.h"
 
 
 
@@ -29,20 +33,7 @@
 #endif
    #define LIB_VERSION   10                           ///< Library version (divide by 10)
 
-   // Export API:
-#ifdef _WINDOWS
-   // Specifies i/o linkage (VC++ spec):
-   #ifdef ENGINE_EXPORTS
-      #define ENG_API __declspec(dllexport)
-   #else
-      #define ENG_API __declspec(dllimport)
-   #endif      
 
-   // Get rid of annoying warnings:
-   #pragma warning(disable : 4251) 
-#else // Under linux
-   #define ENG_API
-#endif
 
 
 
@@ -88,6 +79,10 @@ public: //
    // Init/free:
    bool init();
    bool free();   
+   void loadFromFile(const std::string& fileName);
+   void swapBuffers();
+   void mainEventLoop();
+   void render(Camera* camera, List* list);
 
 
 ///////////

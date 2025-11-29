@@ -2,11 +2,12 @@
 
 #include "glm/glm.hpp"
 #include "node.h"
+#include "libConfig.h"
 
 /**
  * @brief Definisce il punto di vista e la proiezione per il rendering.
  */
-class Camera : public Node {
+class ENG_API Camera : public Node {
 public:
    Camera(unsigned int id, const std::string& name);  // Added parameters
    ~Camera();

@@ -1,7 +1,8 @@
 #pragma once
 #include "node.h"
+#include "libConfig.h"
 
-class Light : public Node
+class ENG_API Light : public Node
 {
 public:
 	Light();

@@ -1,8 +1,9 @@
 #pragma once
 
 #include "light.h"
+#include "libConfig.h"
 
-class InfiniteLight : public Light
+class ENG_API InfiniteLight : public Light
 {
 public:
 	InfiniteLight();

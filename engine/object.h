@@ -2,11 +2,12 @@
 
 #include <string>
 #include <memory>
+#include "libConfig.h"
 
 /**
  * @brief Classe base astratta per tutti gli oggetti della scena.
  */
-class Object {
+class ENG_API Object {
 public:
     Object(unsigned int id, const std::string& name);
 

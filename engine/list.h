@@ -2,9 +2,10 @@
 #include "object.h"
 #include "node.h"
 #include <vector>
+#include "libConfig.h"
 
 
-class List : public Object {
+class ENG_API List : public Object {
 public:
 	List();
 	~List();
