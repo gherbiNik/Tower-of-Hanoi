@@ -18,7 +18,7 @@ public:
 
     virtual ~Object() = default;
 
-private:
+protected:
     unsigned int uid;
     std::string name;
 };

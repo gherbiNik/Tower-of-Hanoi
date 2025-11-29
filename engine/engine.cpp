@@ -17,6 +17,10 @@
    // C/C++:
    #include <iostream>   
    #include <source_location>
+   #include <GL/freeglut.h> 
+   #include <glm/gtc/type_ptr.hpp>
+
+
 
 
 
@@ -125,4 +129,34 @@ bool ENG_API Eng::Base::free()
    std::cout << "[<] " << LIB_NAME << " deinitialized" << std::endl;
    reserved->initFlag = false;
    return true;
+}
+
+void ENG_API Eng::Base::render(Camera* camera, List* list)
+{
+   if (!camera || !list) return;
+
+   // 1. Pulisci i buffer
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   // 2. Imposta la matrice di Proiezione
+   glMatrixMode(GL_PROJECTION);
+   glLoadMatrixf(glm::value_ptr(camera->getProjectionMatrix()));
+
+   // 3. Calcola la View Matrix (inversa della camera)
+   glm::mat4 viewMatrix = camera->getInvCameraMatrix();
+
+   // 4. Renderizza la lista passando la View Matrix
+   // (Il riempimento della lista 'list->pass()' viene fatto dal client prima di chiamare render)
+   list->render(viewMatrix);
+
+   // 5. Scambia i buffer (Double Buffering)
+   this->swapBuffers();
+}
+
+void Eng::Base::swapBuffers() {
+   glutSwapBuffers();
+}
+
+void Eng::Base::mainEventLoop() {
+   glutMainLoop();
 }

@@ -16,7 +16,7 @@ public:
    const glm::mat4& getProjectionMatrix() const;
    glm::mat4 getInvCameraMatrix() const;
 
-   // Setter
+   // Setterç
    void setProjectionMatrix(const glm::mat4& projectionMatrix);
 
 private:

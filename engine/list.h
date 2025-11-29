@@ -10,6 +10,7 @@ public:
 	List();
 	~List();
 	void pass(Node* node, glm::mat4 mat);
+	void render(glm::mat4 viewMatrix);
 	void render();
 	void clear();
 
