@@ -7,6 +7,8 @@ class ENG_API OmnidirectionalLight : public Light
 public:
 	OmnidirectionalLight();
 	~OmnidirectionalLight();
+	
+	void render() override;
 	// Getter
 	float getCutoff() const;
 

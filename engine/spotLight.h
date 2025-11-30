@@ -9,6 +9,7 @@ public:
 	SpotLight();
 	~SpotLight();
 
+	void render() override;
 	// Getter
 	float getCutoff() const;
 	// Setter
