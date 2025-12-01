@@ -1,7 +1,7 @@
 #pragma once
 #include "object.h"
 #include "node.h"
-#include <vector>
+#include <list>
 #include "libConfig.h"
 
 
@@ -14,13 +14,14 @@ public:
 	void render();
 	void clear();
 
-private:
+protected:
 	struct Instance {
 		Node* node;
 		glm::mat4 nodeWorldMatrix;
 	};
 
-	std::vector<Instance> instances;
+
+	std::list<Instance> instances;
 };
 
 

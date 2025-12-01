@@ -2,8 +2,8 @@
 #include <GL/freeglut.h>
 #include <glm/gtc/type_ptr.hpp> // Per glm::value_ptr
 
-Material::Material(unsigned int id, const std::string& name)
-   : Object(id, name), shininess(1.0f), texture(nullptr),
+Material::Material(const std::string& name)
+   : Object(name), shininess(1.0f), texture(nullptr),
    ambient(0.2f), diffuse(0.8f), specular(0.0f), emissione(0.0f)
 {
 }

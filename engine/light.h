@@ -20,11 +20,18 @@ public:
 	void setSpecular(const glm::vec4& specular);
 	void setPosition(const glm::vec4& position);
 
-	void render() override;  // Must implement pure virtual
+	void setLightID(int id);
 
-private:
+	void render() = 0;  
+
+protected:
 	glm::vec4 ambient;
 	glm::vec4 diffuse;
 	glm::vec4 specular;
 	glm::vec4 position;
+
+	static unsigned int m_helper_light_id;
+	static int m_max_lights;
+
+	unsigned int lightID;
 };

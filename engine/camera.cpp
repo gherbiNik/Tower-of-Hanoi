@@ -1,10 +1,7 @@
 #include "camera.h"
-#include <glm/gtc/matrix_transform.hpp> // Necessario per glm::inverse
+#include <glm/gtc/matrix_transform.hpp> 
 
-Camera::Camera(unsigned int id, const std::string& name)
-   : Node(id, name), projectionMatrix(glm::mat4(1.0f))
-{
-}
+Camera::Camera(const std::string& name) : Node(name), projectionMatrix(glm::mat4(1.0f)) {}
 
 Camera::~Camera() {}
 

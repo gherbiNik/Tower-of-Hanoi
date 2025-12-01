@@ -2,7 +2,7 @@
  * @file		main.cpp
  * @brief	Client application (that uses the graphics engine)
  *
- * @authors	 Andrea Perlini, Nicholas Gherbi, Andrea Domenico Trapani << change this to your group members
+ * @authors	 Andrea Perlini, Nicholas Gherbi, Andrea Domenico Trapani 
  */
 
 
@@ -31,14 +31,15 @@
  */
 int main(int argc, char *argv[])
 {
-   // Credits:
-   std::cout << "Client application example, A. Peternier (C) SUPSI" << std::endl;
-   std::cout << std::endl;
-
    // Init engine:
    Eng::Base &eng = Eng::Base::getInstance();
    eng.init();
 
+
+   // Loop principale
+   //while (true) {
+   eng.mainEventLoop();
+   //}
    // Release engine:
    eng.free();
 

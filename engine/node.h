@@ -11,7 +11,7 @@
  */
 class ENG_API Node : public Object {
 public:
-    Node(unsigned int id, const std::string& name);
+    Node(const std::string& name);
     virtual ~Node() = default;
 
     // Transformation matrix accessors

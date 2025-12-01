@@ -3,7 +3,7 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC = 
+INC =  -I../dependencies/glm/include/ -I../dependencies/freeimage/include/
 CFLAGS = -Wall -std=c++20 -fPIC -m64 -fexceptions
 RCFLAGS = 
 RESINC = 

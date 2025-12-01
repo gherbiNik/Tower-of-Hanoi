@@ -1,8 +1,8 @@
 #include "node.h"
 #include <algorithm> // Necessario per std::remove
 
-ENG_API Node::Node(unsigned int id, const std::string& name)
-   : Object(id, name), parent(nullptr), transformationMatrix(glm::mat4(1.0f))
+ENG_API Node::Node(const std::string& name)
+   : Object( name), parent(nullptr), transformationMatrix(glm::mat4(1.0f))
 {
 }
 

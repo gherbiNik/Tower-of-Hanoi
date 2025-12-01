@@ -1,8 +1,13 @@
 #include "object.h"
 
-ENG_API Object::Object(unsigned int id, const std::string& name)
-   : uid(id), name(name)
+// Inizializzazione
+std::atomic<unsigned int> Object::nextId{0};
+
+ENG_API Object::Object(const std::string& name)
+   : name(name)
 {
+   // Assegna il valore corrente e poi lo incrementa per il prossimo oggetto
+   this->uid = nextId++;
 }
 
 std::string Object::getName() const {

@@ -11,7 +11,7 @@
  */
 class ENG_API Mesh : public Node {
 public:
-    Mesh(unsigned int id, const std::string& name);
+    Mesh(const std::string& name);
 
     // Getter
     const std::vector<float>& getVertices() const;

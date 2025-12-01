@@ -1,8 +1,8 @@
 #include "mesh.h"
 #include <GL/freeglut.h> // Include OpenGL
 
-Mesh::Mesh(unsigned int id, const std::string& name)
-   : Node(id, name), material(nullptr)
+Mesh::Mesh(const std::string& name)
+   : Node(name), material(nullptr)
 {
 }
 

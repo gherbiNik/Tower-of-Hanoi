@@ -6,7 +6,7 @@
 
 class ENG_API Material : public Object {
 public:
-   Material(unsigned int id, const std::string& name);  // Added constructor
+   Material(const std::string& name);  // Added constructor
    ~Material();
 
    // Getter

@@ -2,8 +2,8 @@
 #include <GL/freeglut.h>
 // #include "FreeImage.h" // Necessario se implementi il caricamento file
 
-Texture::Texture(unsigned int id, const std::string& name)
-   : Object(id, name)
+Texture::Texture(const std::string& name)
+   : Object(name)
 {
    // TODO: Implementare caricamento texture (glGenTextures, glTexImage2D, ecc.)
 }

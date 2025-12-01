@@ -89,5 +89,8 @@
     <ClInclude Include="spotLight.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="libConfig.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

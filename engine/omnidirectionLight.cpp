@@ -15,18 +15,18 @@ float OmnidirectionalLight::getCutoff() const
 
 void OmnidirectionalLight::render() 
 {
-    int lightId = GL_LIGHT0;
 
-    glEnable(lightId);
-    glLightfv(lightId, GL_AMBIENT, glm::value_ptr(getAmbient()));
-    glLightfv(lightId, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
-    glLightfv(lightId, GL_SPECULAR, glm::value_ptr(getSpecular()));
-    glLightfv(lightId, GL_POSITION, glm::value_ptr(getPosition()));
 
-    glLightf(lightId, GL_SPOT_CUTOFF, cutoff);
+    glEnable(GL_LIGHT0 + lightID);
+    glLightfv(GL_LIGHT0 + lightID, GL_AMBIENT, glm::value_ptr(getAmbient()));
+    glLightfv(GL_LIGHT0 + lightID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
+    glLightfv(GL_LIGHT0 + lightID, GL_SPECULAR, glm::value_ptr(getSpecular()));
+    glLightfv(GL_LIGHT0 + lightID, GL_POSITION, glm::value_ptr(getPosition()));
+
+    glLightf(GL_LIGHT0 + lightID, GL_SPOT_CUTOFF, cutoff);
 
     // Attenuazione standard 
-    glLightf(lightId, GL_CONSTANT_ATTENUATION, 1.0f);
-    glLightf(lightId, GL_LINEAR_ATTENUATION, 0.0f);
-    glLightf(lightId, GL_QUADRATIC_ATTENUATION, 0.0f);
+    glLightf(GL_LIGHT0 + lightID, GL_CONSTANT_ATTENUATION, 1.0f);
+    glLightf(GL_LIGHT0 + lightID, GL_LINEAR_ATTENUATION, 0.0f);
+    glLightf(GL_LIGHT0 + lightID, GL_QUADRATIC_ATTENUATION, 0.0f);
 }

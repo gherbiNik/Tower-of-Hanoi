@@ -17,7 +17,8 @@
    // C/C++:
    #include <iostream>   
    #include <source_location>
-   #include <GL/freeglut.h> 
+   #include <GL/freeglut.h>
+
    #include <glm/gtc/type_ptr.hpp>
 
 
@@ -131,6 +132,10 @@ bool ENG_API Eng::Base::free()
    return true;
 }
 
+void Eng::Base::loadFromFile(const char* file_path, const char* texture_dir)
+{
+}
+
 void ENG_API Eng::Base::render(Camera* camera, List* list)
 {
    if (!camera || !list) return;
@@ -149,14 +154,42 @@ void ENG_API Eng::Base::render(Camera* camera, List* list)
    // (Il riempimento della lista 'list->pass()' viene fatto dal client prima di chiamare render)
    list->render(viewMatrix);
 
-   // 5. Scambia i buffer (Double Buffering)
-   this->swapBuffers();
+  
 }
 
-void Eng::Base::swapBuffers() {
-   glutSwapBuffers();
+void Eng::Base::setCamera(Camera* camera)
+{
+   // TODO
 }
+
+
 
 void Eng::Base::mainEventLoop() {
    glutMainLoop();
+}
+
+
+void Eng::displayCallBack() {
+   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+   glutSwapBuffers();
+}
+
+void ENG_API Eng::Base::registerDisplayCallback(void (*function)(void)) {
+   glutDisplayFunc(displayCallBack);
+}
+
+void ENG_API Eng::Base::registerReshapeCallback(void (*function)(int, int)) {
+   glutReshapeFunc(reshapeCallBack);
+}
+
+void Eng::reshapeCallBack(int width, int height)
+{
+   glViewport(0, 0, width, height);
+   glMatrixMode(GL_PROJECTION);
+   glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 1.0f, 150.0f);
+   glLoadMatrixf(glm::value_ptr(projection));
+   glMatrixMode(GL_MODELVIEW);
 }
