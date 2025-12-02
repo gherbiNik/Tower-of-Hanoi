@@ -22,25 +22,25 @@ void SpotLight::setCutoff(float value)
 
 void SpotLight::render()
 {
+   if (lightContextID < 0) return; // <--- Usa lightContextID
 
+   glEnable(lightContextID);
+   glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
+   glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
+   glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
+   glLightfv(lightContextID, GL_POSITION, glm::value_ptr(getPosition()));
 
-    glEnable(GL_LIGHT0 + lightID);
-    glLightfv(GL_LIGHT0 + lightID, GL_AMBIENT, glm::value_ptr(getAmbient()));
-    glLightfv(GL_LIGHT0 + lightID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
-    glLightfv(GL_LIGHT0 + lightID, GL_SPECULAR, glm::value_ptr(getSpecular()));
-    glLightfv(GL_LIGHT0 + lightID, GL_POSITION, glm::value_ptr(getPosition()));
+   glLightf(lightContextID, GL_SPOT_CUTOFF, cutoff);
 
-    glLightf(GL_LIGHT0 + lightID, GL_SPOT_CUTOFF, cutoff);
-    
-    // Direzione dello spot (di default verso -Z)
-    glm::vec3 spotDirection(0.0f, 0.0f, -1.0f);
-    glLightfv(GL_LIGHT0 + lightID, GL_SPOT_DIRECTION, glm::value_ptr(spotDirection));
-    
-    // Concentrazione del fascio (Esponente)
-    glLightf(GL_LIGHT0 + lightID, GL_SPOT_EXPONENT, 0.0f);
-    
-    // Attenuazione
-    glLightf(GL_LIGHT0 + lightID, GL_CONSTANT_ATTENUATION, 1.0f);
-    glLightf(GL_LIGHT0 + lightID, GL_LINEAR_ATTENUATION, 0.0f);
-    glLightf(GL_LIGHT0 + lightID, GL_QUADRATIC_ATTENUATION, 0.0f);
+   // Direzione dello spot (di default verso -Z locale, o custom se implementato)
+   // Nota: in fixed pipeline la direzione dello spot va settata con GL_SPOT_DIRECTION
+   glm::vec3 spotDirection(0.0f, 0.0f, -1.0f);
+   glLightfv(lightContextID, GL_SPOT_DIRECTION, glm::value_ptr(spotDirection));
+
+   glLightf(lightContextID, GL_SPOT_EXPONENT, 0.0f); // o altro valore
+
+   // Attenuazione
+   glLightf(lightContextID, GL_CONSTANT_ATTENUATION, 1.0f);
+   glLightf(lightContextID, GL_LINEAR_ATTENUATION, 0.0f);
+   glLightf(lightContextID, GL_QUADRATIC_ATTENUATION, 0.0f);
 }

@@ -22,15 +22,14 @@ glm::vec3 InfiniteLight::getDirection() const {
     return glm::vec3(pos.x, pos.y, pos.z);
 }
 
-void InfiniteLight::render(){
-	
+void InfiniteLight::render() {
+   if (lightContextID < 0) return; // <--- Usa lightContextID
 
-    glEnable(GL_LIGHT0+lightID);
-    glLightfv(GL_LIGHT0 + lightID, GL_AMBIENT, glm::value_ptr(getAmbient()));
-    glLightfv(GL_LIGHT0 + lightID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
-    glLightfv(GL_LIGHT0 + lightID, GL_SPECULAR, glm::value_ptr(getSpecular()));
+   glEnable(lightContextID);
+   glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
+   glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
+   glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
 
-    // La posizione con w=0.0 viene interpretata come direzione
-    // (luce direzionale infinitamente distante)
-    glLightfv(GL_LIGHT0 + lightID, GL_POSITION, glm::value_ptr(getPosition()));
+   // Luce direzionale: w=0 nel vettore posizione (gestito dal costruttore o setter)
+   glLightfv(lightContextID, GL_POSITION, glm::value_ptr(getPosition()));
 }

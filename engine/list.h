@@ -11,7 +11,7 @@ public:
 	~List();
 	void pass(Node* node, glm::mat4 mat);
 	void render(glm::mat4 viewMatrix);
-	void render();
+	void render() override;
 	void clear();
 
 protected:

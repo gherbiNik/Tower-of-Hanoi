@@ -1,143 +1,73 @@
 /**
  * @file		engine.h
  * @brief	Graphics engine main include file
- *
- * @author	Achille Peternier (C) SUPSI [achille.peternier@supsi.ch] << change this to your group members
  */
 #pragma once
 
-
-
- 
-//////////////
-// #INCLUDE //
-//////////////
-
-   // C/C++:         
 #include <memory>
+#include <functional>
 #include <string>
+#include "libConfig.h"
 #include "camera.h"
 #include "list.h"
-#include "light.h"
-#include "libConfig.h"
-
-
-
-/////////////
-// VERSION //
-/////////////
-
-   // Generic info:
-#ifdef _DEBUG
-   #define LIB_NAME      "My Graphics Engine v0.1a (debug)"   ///< Library credits
-#else
-   #define LIB_NAME      "My Graphics Engine v0.1a"   ///< Library credits
-#endif
-   #define LIB_VERSION   10                           ///< Library version (divide by 10)
-
-
-
-
-
-///////////////
-// NAMESPACE //
-///////////////
 
 namespace Eng {
 
+   // Definizioni dei tipi di callback per il Client
+   using DisplayCallback = std::function<void()>;
+   using ReshapeCallback = std::function<void(int width, int height)>;
+   using KeyboardCallback = std::function<void(unsigned char key, int x, int y)>;
+   using SpecialCallback = std::function<void(int key, int x, int y)>;
 
+   class ENG_API Base final
+   {
+   public:
+      // Singleton
+      static Base& getInstance();
 
-//////////////
-// #INCLUDE //
-//////////////   
+      // Ciclo di vita
+      bool init(int argc, char* argv[]);
+      bool free();
 
-   // You can subinclude here other headers of your engine...
+      void setRenderList(List* list);
+      void setMainCamera(Camera* camera);
 
+      // Gestione Finestra e Loop
+      void createWindow(int width, int height, int x, int y, const char* title);
+      void update(); // Avvia il main loop
 
+      // Rendering
+      void render(Camera* camera, List* list);
+      void render();
 
-///////////////////////
-// MAIN ENGINE CLASS //
-///////////////////////
+      // Callback Registration (Il client usa queste per agganciare la logica)
+      void setDisplayCallback(DisplayCallback cb);
+      void setReshapeCallback(ReshapeCallback cb);
+      void setKeyboardCallback(KeyboardCallback cb);
+      void setSpecialCallback(SpecialCallback cb);
 
-/**
- * @brief Base engine main class. This class is a singleton.
- */
-class ENG_API Base final
-{
-//////////
-public: //
-//////////	      
+      // Utility per il Client
+      void setClearColor(float r, float g, float b, float a);
+      void setLighting(bool enable);
+      void setDepthTest(bool enable);
 
-   // Const/dest:
-   Base(Base const &) = delete;
-   ~Base();
+      // --- METODI PER LA GESTIONE EVENTI (Chiamati dai wrapper statici) ---
+      void handleDisplayRequest();
+      void handleReshapeRequest(int width, int height);
+      void handleKeyboardRequest(unsigned char key, int x, int y);
+      void handleSpecialRequest(int key, int x, int y);
 
-   // Operators:
-   void operator=(Base const &) = delete;
+      // No copy
+      Base(Base const&) = delete;
+      void operator=(Base const&) = delete;
 
-   // Singleton:
-   static Base &getInstance();
+   private:
+      Base();
+      ~Base();
 
-   // Init/free:
-   bool init();
-   bool free();   
-   void loadFromFile(const char* file_path, const char* texture_dir);
-   
-   void update();
-   friend void reshapeCallBack(int width, int height);
-   friend void displayCallBack();
-   void render(Camera* camera, List* list);
+      // PIMPL: Nasconde i dettagli privati (es. header GLUT)
+      struct Reserved;
+      std::unique_ptr<Reserved> reserved;
+   };
 
-   /**
-   * \brief Sets the engine's active camera.
-   * \param camera Pointer to the PerspectiveCamera object.
-   */
-   void setCamera(Camera* camera);
-
-   /**
- * \brief Registers a display callback.
- * \param function Pointer to the display callback function.
- */
-    void registerDisplayCallback(void (*function)(void));
-
-   /**
-    * \brief Registers a reshape callback.
-    * \param function Pointer to the reshape callback function.
-    */
-    void registerReshapeCallback(void (*function)(int, int));
-
-
-
-///////////
-private: //
-///////////	
-
-   // Reserved:
-   struct Reserved;
-   std::unique_ptr<Reserved> reserved;
-
-   Camera* camera;
-   /**
-   * \brief Pointer to the user-defined reshape callback function.
-   *
-   * This function is invoked when the window is resized.
-   * It takes the new width and height as arguments.
-   */
-   void (*reshape_function)(int, int) { nullptr };
-
-   /**
-    * \brief Pointer to the user-defined display callback function.
-    *
-    * This function is called to render the window content.
-   */
-   void (*display_function)(void) { nullptr };
-
-
-   
-
-   // Const/dest:
-   Base();
-};
-
-}; // end of namespace Eng::
-
+} // namespace Eng

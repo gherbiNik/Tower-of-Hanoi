@@ -1,194 +1,192 @@
-/**
- * @file		engine.cpp
- * @brief	Graphics engine main file
- *
- */
+#include "engine.h"
+#include <iostream>   
+#include <GL/freeglut.h>
+#include <glm/gtc/type_ptr.hpp>
 
-
-
-//////////////
-// #INCLUDE //
-//////////////
-   // Main include:
-   #include "engine.h"
-   
-   // C/C++:
-   #include <iostream>   
-   #include <source_location>
-   #include <GL/freeglut.h>
-
-   #include <glm/gtc/type_ptr.hpp>
-
-
-
-
-
-/////////////////////////
-// RESERVED STRUCTURES //
-/////////////////////////
-
-/**
- * @brief Base class reserved structure (using PIMPL/Bridge design pattern https://en.wikipedia.org/wiki/Opaque_pointer).
- */
+// --- PIMPL STRUCTURE ---
 struct Eng::Base::Reserved
 {
-   // Flags:
-   bool initFlag;
-   
+   bool initFlag = false;
 
-   /**
-    * Constructor.
-    */
-   Reserved() : initFlag{ false } 
-   {}
+   // --- DATI SCENA  ---
+   Camera* currentCamera = nullptr;  
+   List* currentList = nullptr;      
+
+   // Callback del Client
+   Eng::DisplayCallback   clientDisplayCb = nullptr;
+   Eng::ReshapeCallback  clientReshapeCb = nullptr;
+   Eng::KeyboardCallback clientKeyboardCb = nullptr;
+   Eng::SpecialCallback  clientSpecialCb = nullptr;
 };
 
-
-
-////////////////////////
-// BODY OF CLASS Base //
-////////////////////////
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * Constructor.
- */
-ENG_API Eng::Base::Base() : reserved(std::make_unique<Eng::Base::Reserved>())
-{  
-#ifdef _DEBUG   
-   std::cout << "[+] " << std::source_location::current().function_name() << " invoked" << std::endl;
-#endif
+// --- STATIC WRAPPERS (Ponte C -> C++) ---
+static void glutDisplayWrapper() {
+   // Delega tutto all'istanza singleton
+   Eng::Base::getInstance().handleDisplayRequest();
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * Destructor.
- */
-ENG_API Eng::Base::~Base()
-{
-#ifdef _DEBUG
-   std::cout << "[-] " << std::source_location::current().function_name() << " invoked" << std::endl;
-#endif
+static void glutReshapeWrapper(int width, int height) {
+   Eng::Base::getInstance().handleReshapeRequest(width, height);
 }
 
+static void glutKeyboardWrapper(unsigned char key, int x, int y) {
+   Eng::Base::getInstance().handleKeyboardRequest(key, x, y);
+}
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * Gets a reference to the (unique) singleton instance.
- * @return reference to singleton instance
- */
-Eng::Base ENG_API &Eng::Base::getInstance()
-{
+static void glutSpecialWrapper(int key, int x, int y) {
+   Eng::Base::getInstance().handleSpecialRequest(key, x, y);
+}
+
+// --- IMPLEMENTAZIONE BASE ---
+
+Eng::Base::Base() : reserved(std::make_unique<Eng::Base::Reserved>()) {}
+Eng::Base::~Base() { free(); }
+
+Eng::Base& Eng::Base::getInstance() {
    static Base instance;
    return instance;
 }
 
+bool Eng::Base::init(int argc, char* argv[]) {
+   if (reserved->initFlag) return false;
 
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * Init internal components. 
- * @return TF
- */
-bool ENG_API Eng::Base::init()
-{
-   // Already initialized?
-   if (reserved->initFlag)
-   {
-      std::cout << "ERROR: engine already initialized" << std::endl;
-      return false;
-   }
+   // Inizializza GLUT internamente
+   glutInit(&argc, argv);
 
-   // Here you can initialize most of the graphics engine's dependencies and default settings...
-   
-   // Done:
-   std::cout << "[>] " << LIB_NAME << " initialized" << std::endl;
+   std::cout << "[Engine] Initialized" << std::endl;
    reserved->initFlag = true;
    return true;
 }
 
-
-/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/**
- * Free internal components.
- * @return TF
- */
-bool ENG_API Eng::Base::free()
-{
-   // Not initialized?
-   if (!reserved->initFlag)
-   {
-      std::cout << "ERROR: engine not initialized" << std::endl;
-      return false;
-   }
-
-   // Here you can properly dispose of any allocated resource (including third-party dependencies)...
-
-   // Done:
-   std::cout << "[<] " << LIB_NAME << " deinitialized" << std::endl;
+bool Eng::Base::free() {
+   if (!reserved->initFlag) return false;
    reserved->initFlag = false;
+   std::cout << "[Engine] Freed" << std::endl;
    return true;
 }
 
-void Eng::Base::loadFromFile(const char* file_path, const char* texture_dir)
-{
+void Eng::Base::createWindow(int width, int height, int x, int y, const char* title) {
+   if (!reserved->initFlag) {
+      std::cerr << "Error: Engine not initialized. Call init() first." << std::endl;
+      return;
+   }
+
+   glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+   glutInitWindowSize(width, height);
+   glutInitWindowPosition(x, y);
+   glutCreateWindow(title);
+
+   // Registra i wrapper statici
+   glutDisplayFunc(glutDisplayWrapper);
+   glutReshapeFunc(glutReshapeWrapper);
+   glutKeyboardFunc(glutKeyboardWrapper);
+   glutSpecialFunc(glutSpecialWrapper);
+
+   // Impostazioni OpenGL di base
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_CULL_FACE);
+   glEnable(GL_LIGHTING);
+   glEnable(GL_NORMALIZE); // Utile se scaliamo le mesh
+   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 }
-
-void ENG_API Eng::Base::render(Camera* camera, List* list)
-{
-   if (!camera || !list) return;
-
-   // 1. Pulisci i buffer
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-   // 2. Imposta la matrice di Proiezione
-   glMatrixMode(GL_PROJECTION);
-   glLoadMatrixf(glm::value_ptr(camera->getProjectionMatrix()));
-
-   // 3. Calcola la View Matrix (inversa della camera)
-   glm::mat4 viewMatrix = camera->getInvCameraMatrix();
-
-   // 4. Renderizza la lista passando la View Matrix
-   // (Il riempimento della lista 'list->pass()' viene fatto dal client prima di chiamare render)
-   list->render(viewMatrix);
-
-  
-}
-
-void Eng::Base::setCamera(Camera* camera)
-{
-   // TODO
-}
-
-
 
 void Eng::Base::update() {
    glutMainLoop();
 }
 
-void Eng::reshapeCallBack(int width, int height)
-{
-   glViewport(0, 0, width, height);
-   glMatrixMode(GL_PROJECTION);
-   glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 1.0f, 150.0f);
-   glLoadMatrixf(glm::value_ptr(projection));
-   glMatrixMode(GL_MODELVIEW);
+// Setters per le callback
+void Eng::Base::setDisplayCallback(DisplayCallback cb) { reserved->clientDisplayCb = cb; }
+void Eng::Base::setReshapeCallback(ReshapeCallback cb) { reserved->clientReshapeCb = cb; }
+void Eng::Base::setKeyboardCallback(KeyboardCallback cb) { reserved->clientKeyboardCb = cb; }
+void Eng::Base::setSpecialCallback(SpecialCallback cb) { reserved->clientSpecialCb = cb; }
+
+// Utility
+void Eng::Base::setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
+void Eng::Base::setLighting(bool enable) { if (enable) glEnable(GL_LIGHTING); else glDisable(GL_LIGHTING); }
+void Eng::Base::setDepthTest(bool enable) { if (enable) glEnable(GL_DEPTH_TEST); else glDisable(GL_DEPTH_TEST); }
+
+void Eng::Base::setRenderList(List* list) {
+   reserved->currentList = list; // Salviamo il puntatore per il rendering
 }
 
+void Eng::Base::setMainCamera(Camera* camera) {
+   reserved->currentCamera = camera; // Salviamo il puntatore per il rendering
+}
 
-void Eng::displayCallBack() {
-   glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+// Main Render Function
+void Eng::Base::render(Camera* camera, List* list) {
+   if (!camera || !list) return;
+
+   // 1. Pulisci buffer
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+   // 2. Setup Proiezione
+   glMatrixMode(GL_PROJECTION);
+   glLoadMatrixf(glm::value_ptr(camera->getProjectionMatrix()));
 
+   // 3. Ottieni View Matrix (Inversa della camera)
+   glm::mat4 viewMatrix = camera->getInvCameraMatrix();
+
+   // 4. Renderizza la lista
+   list->render(viewMatrix);
+
+   // 5. Swap Buffers
    glutSwapBuffers();
 }
 
-void ENG_API Eng::Base::registerDisplayCallback(void (*function)(void)) {
-   glutDisplayFunc(displayCallBack);
+void Eng::Base::render() {
+   // Safety Check sui dati interni
+   if (!reserved->currentCamera || !reserved->currentList) return;
+
+   // 1. Pulisci buffer
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   // 2. Setup Proiezione
+   glMatrixMode(GL_PROJECTION);
+   glLoadMatrixf(glm::value_ptr(reserved->currentCamera->getProjectionMatrix()));
+
+   // 3. Setup View Matrix
+   glm::mat4 viewMatrix = reserved->currentCamera->getInvCameraMatrix();
+
+   // 4. Render List
+   reserved->currentList->render(viewMatrix);
+
+   // 5. Swap
+   glutSwapBuffers();
 }
 
-void ENG_API Eng::Base::registerReshapeCallback(void (*function)(int, int)) {
-   glutReshapeFunc(reshapeCallBack);
+void Eng::Base::handleDisplayRequest() {
+   // 1. Esegui la logica del client (animazioni, calcoli, riempimento lista)
+   if (reserved->clientDisplayCb) {
+      reserved->clientDisplayCb();
+   }
+
+   // 2. Esegui il rendering tecnico dell'engine
+   // Nota: render() usa currentCamera e currentList che il client dovrebbe aver settato
+   // dentro la clientRenderCb appena chiamata.
+   this->render();
 }
 
+void Eng::Base::handleReshapeRequest(int width, int height) {
+   if (height == 0) height = 1;
+
+   // Aggiorna viewport OpenGL
+   glViewport(0, 0, width, height);
+
+   // Notifica il client (per ricalcolare la projection matrix)
+   if (reserved->clientReshapeCb) {
+      reserved->clientReshapeCb(width, height);
+   }
+}
+
+void Eng::Base::handleKeyboardRequest(unsigned char key, int x, int y) {
+   if (reserved->clientKeyboardCb) {
+      reserved->clientKeyboardCb(key, x, y);
+   }
+}
+
+void Eng::Base::handleSpecialRequest(int key, int x, int y) {
+   if (reserved->clientSpecialCb) {
+      reserved->clientSpecialCb(key, x, y);
+   }
+}
