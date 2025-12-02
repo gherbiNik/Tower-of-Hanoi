@@ -7,13 +7,14 @@
 #pragma once
 
 
+
  
 //////////////
 // #INCLUDE //
 //////////////
 
    // C/C++:         
-   #include <memory>
+#include <memory>
 #include <string>
 #include "camera.h"
 #include "list.h"
@@ -82,7 +83,7 @@ public: //
    bool free();   
    void loadFromFile(const char* file_path, const char* texture_dir);
    
-   void mainEventLoop();
+   void update();
    friend void reshapeCallBack(int width, int height);
    friend void displayCallBack();
    void render(Camera* camera, List* list);

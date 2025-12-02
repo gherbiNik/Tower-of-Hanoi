@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 
    // Loop principale
    //while (true) {
-   eng.mainEventLoop();
+   eng.update();
    //}
    // Release engine:
    eng.free();

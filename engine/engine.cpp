@@ -2,7 +2,6 @@
  * @file		engine.cpp
  * @brief	Graphics engine main file
  *
- * @author	Achille Peternier (C) SUPSI [achille.peternier@supsi.ch] << change this to your group members
  */
 
 
@@ -10,7 +9,6 @@
 //////////////
 // #INCLUDE //
 //////////////
-
    // Main include:
    #include "engine.h"
    
@@ -164,8 +162,17 @@ void Eng::Base::setCamera(Camera* camera)
 
 
 
-void Eng::Base::mainEventLoop() {
+void Eng::Base::update() {
    glutMainLoop();
+}
+
+void Eng::reshapeCallBack(int width, int height)
+{
+   glViewport(0, 0, width, height);
+   glMatrixMode(GL_PROJECTION);
+   glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 1.0f, 150.0f);
+   glLoadMatrixf(glm::value_ptr(projection));
+   glMatrixMode(GL_MODELVIEW);
 }
 
 
@@ -185,11 +192,3 @@ void ENG_API Eng::Base::registerReshapeCallback(void (*function)(int, int)) {
    glutReshapeFunc(reshapeCallBack);
 }
 
-void Eng::reshapeCallBack(int width, int height)
-{
-   glViewport(0, 0, width, height);
-   glMatrixMode(GL_PROJECTION);
-   glm::mat4 projection = glm::perspective(glm::radians(60.0f), (float)width / (float)height, 1.0f, 150.0f);
-   glLoadMatrixf(glm::value_ptr(projection));
-   glMatrixMode(GL_MODELVIEW);
-}
