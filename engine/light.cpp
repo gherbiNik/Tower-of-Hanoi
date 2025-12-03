@@ -3,39 +3,45 @@
 #include <glm/gtc/type_ptr.hpp>
 
 Light::Light() : Node("Light"),
-lightContextID(-1), // Inizialmente non assegnata
-ambient(0.0f), diffuse(1.0f), specular(1.0f), position(0.0f, 0.0f, 0.0f, 1.0f)
+lightContextID(-1),
+ambient(0.0f),
+diffuse(1.0f),
+specular(1.0f),
+position(0.0f, 0.0f, 0.0f, 1.0f)
+{
+}
+
+Light::Light(const std::string& name, const glm::mat4& matrix)
+    : Node(name),
+    lightContextID(-1),
+    ambient(0.0f),
+    diffuse(1.0f),
+    specular(1.0f),
+    position(0.0f, 0.0f, 0.0f, 1.0f)
 {
 }
 
 Light::~Light() {}
 
-// Getter implementation...
 const glm::vec4& Light::getAmbient() const { return ambient; }
 const glm::vec4& Light::getDiffuse() const { return diffuse; }
 const glm::vec4& Light::getSpecular() const { return specular; }
 const glm::vec4& Light::getPosition() const { return position; }
 
-// Setter implementation...
 void Light::setAmbient(const glm::vec4& v) { ambient = v; }
 void Light::setDiffuse(const glm::vec4& v) { diffuse = v; }
 void Light::setSpecular(const glm::vec4& v) { specular = v; }
 void Light::setPosition(const glm::vec4& v) { position = v; }
 
 void Light::setLightID(int id) {
-   this->lightContextID = id;
+    this->lightContextID = id;
 }
 
 void Light::render() {
-   // Se l'ID non è valido (lista piena), non fare nulla
-   if (lightContextID < 0) return;
-
-
-   glEnable(lightContextID); // lightContextID sarà GL_LIGHT0 + i
-   glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(ambient));
-   glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(diffuse));
-   glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(specular));
-
-   // La posizione è moltiplicata per la ModelView corrente
-   glLightfv(lightContextID, GL_POSITION, glm::value_ptr(position));
+    if (lightContextID < 0) return;
+    glEnable(lightContextID);
+    glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(ambient));
+    glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(diffuse));
+    glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(specular));
+    glLightfv(lightContextID, GL_POSITION, glm::value_ptr(position));
 }

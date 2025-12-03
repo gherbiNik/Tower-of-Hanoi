@@ -2,11 +2,27 @@
 #include <GL/freeglut.h>
 #include <glm/gtc/type_ptr.hpp>
 
-ENG_API OmnidirectionalLight::OmnidirectionalLight() : Light()
-{}
+OmnidirectionalLight::OmnidirectionalLight() : Light()
+{
+}
+
+OmnidirectionalLight::OmnidirectionalLight(const std::string& name, const glm::mat4& matrix,
+    const glm::vec3& ambient, const glm::vec3& diffuse,
+    const glm::vec3& specular)
+    : Light(name, matrix)
+{
+    setAmbient(glm::vec4(ambient, 1.0f));
+    setDiffuse(glm::vec4(diffuse, 1.0f));
+    setSpecular(glm::vec4(specular, 1.0f));
+
+    // Estrai la posizione dalla matrice di trasformazione
+    glm::vec3 position(matrix[3][0], matrix[3][1], matrix[3][2]);
+    setPosition(glm::vec4(position, 1.0f)); // w=1.0 per luce posizionale
+}
 
 OmnidirectionalLight::~OmnidirectionalLight()
-{}
+{
+}
 
 float OmnidirectionalLight::getCutoff() const
 {
@@ -15,21 +31,20 @@ float OmnidirectionalLight::getCutoff() const
 
 void OmnidirectionalLight::render()
 {
-   // Se l'ID non è valido, esci
-   if (lightContextID < 0) return; // <--- Usa lightContextID
+    if (lightContextID < 0) return;
 
-   glEnable(lightContextID); // <--- Usa lightContextID ovunque
-   glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
-   glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
-   glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
+    glEnable(lightContextID);
+    glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
+    glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
+    glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
 
-   // W = 1.0f per luci posizionali
-   glLightfv(lightContextID, GL_POSITION, glm::value_ptr(getPosition()));
+    // W = 1.0f per luci posizionali
+    glLightfv(lightContextID, GL_POSITION, glm::value_ptr(getPosition()));
 
-   glLightf(lightContextID, GL_SPOT_CUTOFF, cutoff); // 180.0 per omni
+    glLightf(lightContextID, GL_SPOT_CUTOFF, cutoff); // 180.0 per omni
 
-   // Attenuazione standard 
-   glLightf(lightContextID, GL_CONSTANT_ATTENUATION, 1.0f);
-   glLightf(lightContextID, GL_LINEAR_ATTENUATION, 0.0f);
-   glLightf(lightContextID, GL_QUADRATIC_ATTENUATION, 0.0f);
+    // Attenuazione standard
+    glLightf(lightContextID, GL_CONSTANT_ATTENUATION, 1.0f);
+    glLightf(lightContextID, GL_LINEAR_ATTENUATION, 0.0f);
+    glLightf(lightContextID, GL_QUADRATIC_ATTENUATION, 0.0f);
 }

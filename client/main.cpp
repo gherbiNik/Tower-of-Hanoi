@@ -109,13 +109,13 @@ int main(int argc, char* argv[]) {
    triangleMesh = new Mesh("TestMesh");
 
    // Definiamo i vertici (x, y, z) per un triangolo equilatero
-   std::vector<float> vertices = {
-       -2.0f, -2.0f, 0.0f,    // Basso-Sinistra
-        2.0f, -2.0f, 0.0f,    // Basso-Destra
-        0.0f,  2.0f, 0.0f     // Alto-Centro
+   std::vector<glm::vec3> vertices = {
+        glm::vec3(-2.0f, -2.0f, 0.0f),    
+        glm::vec3(2.0f, -2.0f, 0.0f),     
+        glm::vec3(0.0f,  2.0f, 0.0f)      
    };
 
-   triangleMesh->setVertices(vertices);
+   triangleMesh->set_all_vertices(vertices);
    triangleMesh->setMaterial(myMat);
 
    root->addChild(triangleMesh); // Aggiungi al grafo

@@ -93,6 +93,7 @@
     <ClCompile Include="node.cpp" />
     <ClCompile Include="object.cpp" />
     <ClCompile Include="omnidirectionLight.cpp" />
+    <ClCompile Include="ovoReader.cpp" />
     <ClCompile Include="spotLight.cpp" />
     <ClCompile Include="texture.cpp" />
   </ItemGroup>
@@ -108,6 +109,7 @@
     <ClInclude Include="node.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="omnidirectionalLight.h" />
+    <ClInclude Include="ovoReader.h" />
     <ClInclude Include="spotLight.h" />
     <ClInclude Include="texture.h" />
   </ItemGroup>
