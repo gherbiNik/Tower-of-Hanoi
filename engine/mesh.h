@@ -10,6 +10,7 @@
 */
 class ENG_API Mesh : public Node {
 public:
+    Mesh(const std::string& name);
     Mesh(const std::string& name, glm::mat4 matrix, unsigned int faces, unsigned int vertices, Material* material);
 
     // Getters

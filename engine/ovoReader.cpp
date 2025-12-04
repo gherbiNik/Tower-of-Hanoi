@@ -246,7 +246,7 @@ Material ENG_API* OvoReader::parse_material(char* data, unsigned int& position, 
 
 Node ENG_API* OvoReader::parse_node(char* data, unsigned int& position, unsigned int* n_children)
 {
-
+    /*
     unsigned int versionId;
     memcpy(&versionId, data + position, sizeof(unsigned int));
     //position += sizeof(unsigned int);	
@@ -254,6 +254,17 @@ Node ENG_API* OvoReader::parse_node(char* data, unsigned int& position, unsigned
     char nodeName[FILENAME_MAX];
     strcpy(nodeName, data + position);
     position += (unsigned int)strlen(nodeName) + 1;
+    */
+
+    unsigned int versionId;
+    memcpy(&versionId, data + position, sizeof(unsigned int));
+    position += sizeof(unsigned int);  
+
+    char nodeName[FILENAME_MAX];
+    strncpy(nodeName, data + position, FILENAME_MAX - 1);
+    nodeName[FILENAME_MAX - 1] = '\0';
+    position += (unsigned int)strlen(nodeName) + 1;
+
 
     //Node matrix
     glm::mat4 matrix;

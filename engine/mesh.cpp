@@ -1,6 +1,8 @@
 #include "mesh.h"
 #include <GL/freeglut.h>
 #include <iostream>
+Mesh::Mesh(const std::string& name)
+    : Node(name) {}
 
 Mesh::Mesh(const std::string& name, glm::mat4 matrix, unsigned int faces, unsigned int vertices, Material* material)
     : Node(name), matrix(matrix), numFaces(faces), numVertices(vertices), material(material) {

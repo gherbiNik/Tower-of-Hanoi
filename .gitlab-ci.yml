@@ -1,0 +1,29 @@
+stages:
+
+build_project:
+  stage: build
+  image: ubuntu:22.04
+  before_script:
+    - echo "Starting build environment..."
+    - apt-get update -qy
+
+    - apt-get install -y build-essential 
+    - apt-get install -y libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libfreeimage-dev
+
+    - echo "System dependecy installation complete."
+
+  script:
+    - echo "Building the project..."
+    - make
+    - echo "Build complete."
+  
+  artifacts:
+    name: "$CI_JOB_NAME-artifacts"
+    expire_in: 1 week
+    paths:
+      - client/bin/Debug/client
+      - client/bin/Release/client
+
+      
+      - engine/bin/Debug/libengine.so
+      - engine/bin/Release/libengine.so

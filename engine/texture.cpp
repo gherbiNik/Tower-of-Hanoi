@@ -14,7 +14,7 @@ Texture::Texture(const std::string& name, const std::string& filepath)
 		if (pImage) {
 			int nWidth = FreeImage_GetWidth(pImage);
 			int nHeight = FreeImage_GetHeight(pImage);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nWidth, nHeight, 0, GL_BGRA, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(pImage));
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, nWidth, nHeight, 0, GL_BGRA_EXT, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(pImage));
 			FreeImage_Unload(pImage);
 		}
 		FreeImage_Unload(bitmap);
