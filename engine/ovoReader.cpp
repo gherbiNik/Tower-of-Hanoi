@@ -3,7 +3,7 @@
 //////////////
 #define _CRT_SECURE_NO_WARNINGS
 // Camera.h include
-#include "ovoreader.h"
+#include "ovoReader.h"
 using namespace std;
 
 //GLM
