@@ -25,35 +25,33 @@ build_project:
       cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
       cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
 
-      echo "--- 2. Copia dipendenze immagini estese ---"
+      echo "--- 2. Copia TUTTA la suite OpenEXR (IlmThread, Imath, ecc.) ---"
+      # Questo asterisco è fondamentale: prende IlmThread, IlmImf, ecc.
+      find /usr/lib -name "libIlm*.so*" -exec cp {} libs/ \;
+      find /usr/lib -name "libImath*.so*" -exec cp {} libs/ \;
+      find /usr/lib -name "libIex*.so*" -exec cp {} libs/ \;
+      find /usr/lib -name "libHalf*.so*" -exec cp {} libs/ \;
       
-      # FIX WEBP: L'asterisco dopo libwebp serve a prendere anche libwebpmux, libwebpdemux, ecc.
+      echo "--- 3. Copia dipendenze WebP e JXR ---"
       find /usr/lib -name "libwebp*.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libsharpyuv*.so*" -exec cp {} libs/ \;
-      
-      # JPEG XR e OpenJPEG
       find /usr/lib -name "libjxr*.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libjpegxr*.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libopenjp2.so*" -exec cp {} libs/ \;
       
-      # Raw e altri formati
+      echo "--- 4. Copia dipendenze generiche (Raw, Tiff, Compressioni) ---"
       find /usr/lib -name "libraw.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libpng16.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libtiff.so*" -exec cp {} libs/ \;
-      
-      # Librerie di supporto colore e compressione (spesso richieste da FreeImage)
-      find /usr/lib -name "liblcms2.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libgomp.so*" -exec cp {} libs/ \;
+      # Queste servono spesso a Tiff e OpenEXR
+      find /usr/lib -name "libdeflate.so*" -exec cp {} libs/ \;
+      find /usr/lib -name "libjbig.so*" -exec cp {} libs/ \;
       find /usr/lib -name "liblzma.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libzstd.so*" -exec cp {} libs/ \;
+      find /usr/lib -name "libgomp.so*" -exec cp {} libs/ \;
+      find /usr/lib -name "liblcms2.so*" -exec cp {} libs/ \;
 
-      # OpenEXR (High dynamic range)
-      find /usr/lib -name "libImath*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libIlmImf*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libHalf*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libIex*.so*" -exec cp {} libs/ \;
-      
-      echo "Packaging completato. Contenuto:"
+      echo "Packaging completato."
       ls -l libs/
 
   artifacts:
