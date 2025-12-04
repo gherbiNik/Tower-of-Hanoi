@@ -15,23 +15,32 @@ build_project:
     - echo "Building the project..."
     - make
     - echo "Build complete."
-
-    # --- PACKAGING DELLE LIBRERIE (Fix per eseguire l'artifact ovunque) ---
+    
+    # --- PACKAGING COMPLETO DELLE LIBRERIE ---
     - mkdir -p libs
 
-    # 1. Copiamo la TUA libreria engine
+    # 1. Copia la tua engine e le librerie base
     - cp engine/bin/Release/libengine.so libs/
-
-    # 2. Copiamo le librerie di sistema dirette
     - cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
     - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
 
-    # 3. Copiamo le dipendenze "nascoste" (JXR, ecc.) usando find per sicurezza
+    # 2. Copia le dipendenze specifiche che ti hanno dato errore (JXR e OpenJPEG)
     - find /usr/lib -name "libjxr*.so*" -exec cp {} libs/ \;
     - find /usr/lib -name "libjpegxr*.so*" -exec cp {} libs/ \;
-    
-    # 4. (Opzionale) Copia anche LibRaw se necessario in futuro
+    - find /usr/lib -name "libopenjp2.so*" -exec cp {} libs/ \;  <-- QUESTA RISOLVE L'ERRORE ATTUALE
+
+    # 3. PREVENZIONE: Copia le altre dipendenze comuni di FreeImage (così non torni tra 5 minuti per LibRaw o WebP)
     - find /usr/lib -name "libraw.so*" -exec cp {} libs/ \;
+    - find /usr/lib -name "libwebp.so*" -exec cp {} libs/ \;
+    - find /usr/lib -name "libpng16.so*" -exec cp {} libs/ \;
+    - find /usr/lib -name "libtiff.so*" -exec cp {} libs/ \;
+    - find /usr/lib -name "libImath*.so*" -exec cp {} libs/ \;
+    - find /usr/lib -name "libIlmImf*.so*" -exec cp {} libs/ \;
+    - find /usr/lib -name "libHalf*.so*" -exec cp {} libs/ \;
+    - find /usr/lib -name "libIex*.so*" -exec cp {} libs/ \;
+    
+    # Debug: vediamo cosa abbiamo raccolto
+    - ls -l libs/
 
   artifacts:
     name: "$CI_JOB_NAME-artifacts"
