@@ -16,18 +16,20 @@ build_project:
     - make
     - echo "Build complete."
     
-    # --- NUOVA PARTE ---
-    # 1. Creiamo una cartella per le librerie
+    # --- CREAZIONE DEL PACCHETTO PORTATILE ---
     - mkdir -p libs
-    
-    # 2. Cerchiamo e copiamo le librerie mancanti (Glut e FreeImage) nella cartella libs
-    # Nota: Su Ubuntu 22.04 le librerie sono solitamente in /usr/lib/x86_64-linux-gnu/
+
+    # 1. Copiamo le librerie dirette (già fatto prima)
     - cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
     - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
     
-    # (Opzionale) Copiamo anche libengine.so se non è già nel path giusto, 
-    # ma dal tuo ldd sembra che lui lo trovi già nella cartella bin/Release.
-    # -------------------
+    # 2. Copiamo la TUA libreria engine (fondamentale per evitare l'errore precedente)
+    - cp engine/bin/Release/libengine.so libs/
+
+    # 3. Copiamo le dipendenze interne di FreeImage (risolvono l'errore attuale e il prossimo)
+    # libjxrglue serve a FreeImage, libjxrlib serve a libjxrglue
+    - cp /usr/lib/x86_64-linux-gnu/libjxrglue.so.0 libs/
+    - cp /usr/lib/x86_64-linux-gnu/libjxrlib.so.0 libs/
 
   artifacts:
     name: "$CI_JOB_NAME-artifacts"
