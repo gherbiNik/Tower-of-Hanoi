@@ -60,10 +60,6 @@ void displayCallback() {
    // Passiamo i dati aggiornati che l'engine userà per disegnare
    engine->setRenderList(list);
    engine->setMainCamera(camera);
-
-   engine->render(camera, list);
-
-
 }
 
 void reshapeCallback(int width, int height) {
@@ -82,7 +78,7 @@ int main(int argc, char* argv[]) {
 
    engine->createWindow(800, 600, 100, 100, "Tower of Hanoi");
 
-  
+   engine->enableFPS();
 
    // Setup Callback
    engine->setDisplayCallback(displayCallback);

@@ -12,6 +12,19 @@ struct Eng::Base::Reserved
    Camera* currentCamera = nullptr;  
    List* currentList = nullptr;      
 
+   // -- WINDOW STATE -- 
+   int windowWidth = 800;  // Default
+   int windowHeight = 600; // Default
+
+   // -- FPS -- 
+   bool show_fps = false;
+   float fps = 0.0f;
+   int frameCounter = 0;
+   std::chrono::time_point<std::chrono::steady_clock> lastTime = std::chrono::steady_clock::now();
+
+   // Queue of messages (Text to Render)
+   std::vector<std::string> textToRender;
+
    // Callback del Client
    Eng::DisplayCallback   clientDisplayCb = nullptr;
    Eng::ReshapeCallback  clientReshapeCb = nullptr;
@@ -138,20 +151,85 @@ void Eng::Base::render() {
    // Safety Check sui dati interni
    if (!reserved->currentCamera || !reserved->currentList) return;
 
-   // 1. Pulisci buffer
+   // ------------------------------------------
+   //           RENDERING 3D (SCENE)
+   // ------------------------------------------
+
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_LIGHTING);
+
+   glEnable(GL_TEXTURE_2D);
+
+   // Se il rendering del testo (2D) ha cambiato il colore corrente (es. a nero),
+   // e i materiali usano GL_COLOR_MATERIAL, gli oggetti 3D diventano neri.
+   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+   
+   // Clean buffer
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   // 2. Setup Proiezione
+   // Setup Proiezione
    glMatrixMode(GL_PROJECTION);
    glLoadMatrixf(glm::value_ptr(reserved->currentCamera->getProjectionMatrix()));
 
-   // 3. Setup View Matrix
+   // Setup View Matrix
    glm::mat4 viewMatrix = reserved->currentCamera->getInvCameraMatrix();
 
-   // 4. Render List
+   // Render List
    reserved->currentList->render(viewMatrix);
 
-   // 5. Swap
+
+   // ------------------------------------------
+   //            RENDERING 2D 
+   // ------------------------------------------
+   calculateFPS();
+
+   // Disabilita effetti 3D non voluti sulla GUI
+   glDisable(GL_LIGHTING);
+   glDisable(GL_TEXTURE_2D);
+   glDisable(GL_DEPTH_TEST); // Disabilita Z-Buffer per scrivere SOPRA tutto
+
+   // Imposta Proiezione Ortogonale (Sovrascrive quella 3D)
+   glMatrixMode(GL_PROJECTION);
+   glm::mat4 ortho = glm::ortho(0.0f, (float)reserved->windowWidth, 0.0f, (float)reserved->windowHeight, -1.0f, 1.0f);
+   glLoadMatrixf(glm::value_ptr(ortho));
+
+   // Resetta ModelView (Sovrascrive quella della camera)
+   glMatrixMode(GL_MODELVIEW);
+   glLoadMatrixf(glm::value_ptr(glm::mat4(1.0f)));
+
+   // Text color set to white
+   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+   char buffer[64];
+
+   // --- Disegno FPS ---
+   if (reserved->show_fps) {
+       float yPosition = reserved->windowHeight - 12.0f;
+       float xPosition = reserved->windowWidth - 220.0f;
+
+       snprintf(buffer, sizeof(buffer), "FPS:");
+       glRasterPos2f(xPosition, yPosition);
+       glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
+
+       yPosition -= 11;
+       snprintf(buffer, sizeof(buffer), "%.2f", reserved->fps);
+       glRasterPos2f(xPosition + 90, yPosition);
+       glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
+   }
+
+   float textYPosition = reserved->windowHeight - 12.0f;
+   if (!reserved->textToRender.empty())
+   {
+       for (const auto& toPrint : reserved->textToRender) {
+           snprintf(buffer, sizeof(buffer), "%s", toPrint.c_str());
+           glRasterPos2f(0.0f, textYPosition);
+           glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
+           textYPosition -= 11;
+       }
+   }
+   // End 2D
+
+   glEnable(GL_LIGHTING);
+
    glutSwapBuffers();
 }
 
@@ -169,6 +247,10 @@ void Eng::Base::handleDisplayRequest() {
 
 void Eng::Base::handleReshapeRequest(int width, int height) {
    if (height == 0) height = 1;
+
+   // Updates internal data
+   reserved->windowWidth = width;
+   reserved->windowHeight = height;
 
    // Aggiorna viewport OpenGL
    glViewport(0, 0, width, height);
@@ -189,4 +271,29 @@ void Eng::Base::handleSpecialRequest(int key, int x, int y) {
    if (reserved->clientSpecialCb) {
       reserved->clientSpecialCb(key, x, y);
    }
+}
+
+void ENG_API Eng::Base::calculateFPS() {
+    reserved->frameCounter++;
+    auto currentTime = std::chrono::steady_clock::now();
+    std::chrono::duration<float> elapsedTime = currentTime - reserved->lastTime;
+
+    if (elapsedTime.count() >= 1.0f) { // Updates every second
+        reserved->fps = reserved->frameCounter / elapsedTime.count();
+        reserved->frameCounter = 0;
+        reserved->lastTime = currentTime;
+    }
+}
+
+void ENG_API Eng::Base::enableFPS() {
+    reserved->show_fps = true;
+}
+
+void ENG_API Eng::Base::disableFPS() {
+    reserved->show_fps = false;
+}
+
+// Will be use by client to add text
+void Eng::Base::addText(const std::string& text) {
+    reserved->textToRender.push_back(text);
 }

@@ -10,6 +10,8 @@
 #include "libConfig.h"
 #include "camera.h"
 #include "list.h"
+#include <chrono>
+
 
 namespace Eng {
 
@@ -61,6 +63,11 @@ namespace Eng {
       Base(Base const&) = delete;
       void operator=(Base const&) = delete;
 
+      void enableFPS();
+      void disableFPS();
+      void calculateFPS();
+      void addText(const std::string& text);
+
    private:
       Base();
       ~Base();
@@ -68,6 +75,18 @@ namespace Eng {
       // PIMPL: Nasconde i dettagli privati (es. header GLUT)
       struct Reserved;
       std::unique_ptr<Reserved> reserved;
+    
+      ////FPS:
+      bool show_fps;
+      int frameCounter = 0;
+      float fps = 0.0f;
+      /*
+      * Timestamp of the last frame update.
+        Used to calculate the elapsed time between frames for FPS computation.
+      */
+      std::chrono::time_point<std::chrono::steady_clock> lastTime;
+      ////
+   
    };
 
 } // namespace Eng
