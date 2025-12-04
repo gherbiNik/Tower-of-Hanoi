@@ -92,7 +92,7 @@
     <ClCompile Include="mesh.cpp" />
     <ClCompile Include="node.cpp" />
     <ClCompile Include="object.cpp" />
-    <ClCompile Include="omnidirectionLight.cpp" />
+    <ClCompile Include="omnidirectionalLight.cpp" />
     <ClCompile Include="ovoReader.cpp" />
     <ClCompile Include="spotLight.cpp" />
     <ClCompile Include="texture.cpp" />

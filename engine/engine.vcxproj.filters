@@ -42,7 +42,7 @@
     <ClCompile Include="object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="omnidirectionLight.cpp">
+    <ClCompile Include="omnidirectionalLight.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="spotLight.cpp">

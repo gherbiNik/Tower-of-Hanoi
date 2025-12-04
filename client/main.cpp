@@ -19,6 +19,7 @@
    #include "mesh.h"
    #include "material.h"
    #include "omnidirectionalLight.h"
+   #include "ovoReader.h"
 
    
 
@@ -71,7 +72,7 @@ void reshapeCallback(int width, int height) {
 
    // Aggiorna la matrice di proiezione della camera
    // FOV 45°, Near 0.1, Far 100.0
-   camera->setProjectionMatrix(glm::perspective(glm::radians(45.0f), aspect, 0.1f, 100.0f));
+   camera->setProjectionMatrix(glm::perspective(glm::radians(45.0f), aspect, 0.1f, 2000.0f));
 }
 
 int main(int argc, char* argv[]) {
@@ -89,7 +90,7 @@ int main(int argc, char* argv[]) {
 
    // Setup Scena
    camera = new Camera("MainCam");
-   camera->translate(glm::vec3(0, 0, 10)); // Sposta indietro la camera
+   camera->translate(glm::vec3(20, 20, 120)); // Sposta indietro la camera
 
    list = new List();
    root = new Node("Root");
@@ -126,6 +127,24 @@ int main(int argc, char* argv[]) {
 
    // --- AVVIO ---
    std::cout << "Avvio loop..." << std::endl;
+   OvoReader ovoreader{};
+   Node* tavoloNode = ovoreader.readFile("tavolo.ovo", "texture");
+
+   // 2. CONTROLLA E AGGIUNGI AL GRAFO
+   if (tavoloNode) {
+      std::cout << "OVO caricato con successo! Aggiungo alla scena." << std::endl;
+
+      // Opzionale: scala o sposta il tavolo se è troppo grande/piccolo
+      // tavoloNode->scale(glm::vec3(0.1f)); 
+
+      root->addChild(tavoloNode); // <--- PASSAGGIO FONDAMENTALE MANCANTE
+   }
+   else {
+      std::cerr << "Errore critico: impossibile caricare tavolo.ovo" << std::endl;
+   }
+
+
+
    engine->update(); // Avvia il loop infinito di FreeGLUT
 
    // Pulizia (raggiunta solo se si forza l'uscita dal loop)

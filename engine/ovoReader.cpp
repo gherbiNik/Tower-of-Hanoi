@@ -269,6 +269,7 @@ Node ENG_API* OvoReader::parse_node(char* data, unsigned int& position, unsigned
     //Node matrix
     glm::mat4 matrix;
     memcpy(&matrix, data + position, sizeof(glm::mat4));
+    matrix = glm::transpose(matrix);
     position += sizeof(glm::mat4);
 
     // Nr. of children nodes:
@@ -288,6 +289,9 @@ Node ENG_API* OvoReader::parse_node(char* data, unsigned int& position, unsigned
 
 Mesh ENG_API* OvoReader::parse_mesh(char* data, unsigned int& position, unsigned int* n_children)
 {
+   unsigned int versionId;
+   memcpy(&versionId, data + position, sizeof(unsigned int));
+   position += sizeof(unsigned int);
     // Mesh name (optional for reference, not stored)
     char meshName[FILENAME_MAX];
     strcpy(meshName, data + position);
@@ -295,6 +299,7 @@ Mesh ENG_API* OvoReader::parse_mesh(char* data, unsigned int& position, unsigned
     // Mesh matrix
     glm::mat4 matrix;
     memcpy(&matrix, data + position, sizeof(glm::mat4));
+    matrix = glm::transpose(matrix);
     position += sizeof(glm::mat4);
 
     // Number of children nodes
@@ -493,6 +498,9 @@ Mesh ENG_API* OvoReader::parse_mesh(char* data, unsigned int& position, unsigned
 
 Light ENG_API* OvoReader::parse_light(char* data, unsigned int& position, unsigned int* n_children)
 {
+   unsigned int versionId;
+   memcpy(&versionId, data + position, sizeof(unsigned int));
+   position += sizeof(unsigned int);
     // Nome della luce
     char lightName[FILENAME_MAX];
     strcpy(lightName, data + position);
@@ -500,6 +508,7 @@ Light ENG_API* OvoReader::parse_light(char* data, unsigned int& position, unsign
 
     glm::mat4 matrix;
     memcpy(&matrix, data + position, sizeof(glm::mat4));
+    matrix = glm::transpose(matrix);
     position += sizeof(glm::mat4);
 
     // Numero di figli (non usato direttamente)
