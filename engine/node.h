@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Object.h"
+#include "object.h"
 #include <vector>
 #include "glm/glm.hpp"
 #include "glm/gtc/matrix_transform.hpp"
