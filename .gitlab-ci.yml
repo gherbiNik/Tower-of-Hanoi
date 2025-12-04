@@ -15,28 +15,23 @@ build_project:
     - echo "Building the project..."
     - make
     - echo "Build complete."
-    
-    # --- PACKAGING DELLE LIBRERIE ---
+
+    # --- PACKAGING DELLE LIBRERIE (Fix per eseguire l'artifact ovunque) ---
     - mkdir -p libs
 
-    # 1. Copia la tua engine
+    # 1. Copiamo la TUA libreria engine
     - cp engine/bin/Release/libengine.so libs/
-    
-    # 2. Copia le librerie principali
+
+    # 2. Copiamo le librerie di sistema dirette
     - cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
     - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
 
-    # 3. FIX: Usa 'find' per copiare le dipendenze JXR senza sapere il nome esatto
-    # Questo comando cerca qualsiasi file che inizi con "libjxr" o "libjpegxr"
-    # e lo copia nella cartella libs.
+    # 3. Copiamo le dipendenze "nascoste" (JXR, ecc.) usando find per sicurezza
     - find /usr/lib -name "libjxr*.so*" -exec cp {} libs/ \;
     - find /usr/lib -name "libjpegxr*.so*" -exec cp {} libs/ \;
     
-    # 4. (Opzionale ma consigliato) Copia anche LibRaw se FreeImage la richiede
+    # 4. (Opzionale) Copia anche LibRaw se necessario in futuro
     - find /usr/lib -name "libraw.so*" -exec cp {} libs/ \;
-    
-    # Debug: Mostra cosa abbiamo copiato (così lo vedi nei log di GitLab se fallisce)
-    - ls -l libs/
 
   artifacts:
     name: "$CI_JOB_NAME-artifacts"
@@ -46,6 +41,4 @@ build_project:
       - client/bin/Release/client
       - engine/bin/Debug/libengine.so
       - engine/bin/Release/libengine.so
-      - engine/bin/Debug/main.exe
-      - engine/bin/Release/main.exe
-      - libs/  # <--- IMPORTANTE: Aggiungi la cartella libs agli artifacts
+      - libs/
