@@ -7,17 +7,28 @@ build_project:
   before_script:
     - echo "Starting build environment..."
     - apt-get update -qy
-
     - apt-get install -y build-essential 
     - apt-get install -y libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev freeglut3 libfreeimage-dev libfreeimage3
-
     - echo "System dependecy installation complete."
 
   script:
     - echo "Building the project..."
     - make
     - echo "Build complete."
-  
+    
+    # --- NUOVA PARTE ---
+    # 1. Creiamo una cartella per le librerie
+    - mkdir -p libs
+    
+    # 2. Cerchiamo e copiamo le librerie mancanti (Glut e FreeImage) nella cartella libs
+    # Nota: Su Ubuntu 22.04 le librerie sono solitamente in /usr/lib/x86_64-linux-gnu/
+    - cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
+    - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
+    
+    # (Opzionale) Copiamo anche libengine.so se non è già nel path giusto, 
+    # ma dal tuo ldd sembra che lui lo trovi già nella cartella bin/Release.
+    # -------------------
+
   artifacts:
     name: "$CI_JOB_NAME-artifacts"
     expire_in: 1 week
@@ -28,3 +39,4 @@ build_project:
       - engine/bin/Release/libengine.so
       - engine/bin/Debug/main.exe
       - engine/bin/Release/main.exe
+      - libs/  # <--- IMPORTANTE: Aggiungi la cartella libs agli artifacts
