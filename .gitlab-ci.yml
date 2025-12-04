@@ -1,4 +1,5 @@
 stages:
+  - build
 
 build_project:
   stage: build
@@ -8,7 +9,7 @@ build_project:
     - apt-get update -qy
 
     - apt-get install -y build-essential 
-    - apt-get install -y libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev libfreeimage-dev
+    - apt-get install -y libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev freeglut3 libfreeimage-dev libfreeimage3
 
     - echo "System dependecy installation complete."
 
@@ -23,7 +24,7 @@ build_project:
     paths:
       - client/bin/Debug/client
       - client/bin/Release/client
-
-      
       - engine/bin/Debug/libengine.so
       - engine/bin/Release/libengine.so
+      - engine/bin/Debug/main.exe
+      - engine/bin/Release/main.exe
