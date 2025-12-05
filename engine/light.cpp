@@ -9,6 +9,7 @@ diffuse(1.0f),
 specular(1.0f),
 position(0.0f, 0.0f, 0.0f, 1.0f)
 {
+
 }
 
 Light::Light(const std::string& name, const glm::mat4& matrix)
@@ -19,6 +20,7 @@ Light::Light(const std::string& name, const glm::mat4& matrix)
     specular(1.0f),
     position(0.0f, 0.0f, 0.0f, 1.0f)
 {
+   this->setM(matrix);
 }
 
 Light::~Light() {}

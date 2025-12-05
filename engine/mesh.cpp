@@ -2,10 +2,14 @@
 #include <GL/freeglut.h>
 #include <iostream>
 Mesh::Mesh(const std::string& name)
-    : Node(name) {}
+    : Node(name) {
+   
+}
 
 Mesh::Mesh(const std::string& name, glm::mat4 matrix, unsigned int faces, unsigned int vertices, Material* material)
     : Node(name), matrix(matrix), numFaces(faces), numVertices(vertices), material(material) {
+   this->setM(matrix);
+
 }
 
 const std::vector<glm::vec3>& Mesh::get_all_vertices() const { return all_vertices; }

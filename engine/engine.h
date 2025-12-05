@@ -68,6 +68,8 @@ namespace Eng {
       void calculateFPS();
       void addText(const std::string& text);
 
+      void postRedisplay();
+
    private:
       Base();
       ~Base();

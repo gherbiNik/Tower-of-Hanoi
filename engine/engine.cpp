@@ -1,6 +1,7 @@
 #include "engine.h"
 #include <iostream>   
 #include <GL/freeglut.h>
+#include "FreeImage.h"
 #include <glm/gtc/type_ptr.hpp>
 
 // --- PIMPL STRUCTURE ---
@@ -65,7 +66,7 @@ bool Eng::Base::init(int argc, char* argv[]) {
 
    // Inizializza GLUT internamente
    glutInit(&argc, argv);
-
+   FreeImage_Initialise();
    std::cout << "[Engine] Initialized" << std::endl;
    reserved->initFlag = true;
    return true;
@@ -296,4 +297,8 @@ void ENG_API Eng::Base::disableFPS() {
 // Will be use by client to add text
 void Eng::Base::addText(const std::string& text) {
     reserved->textToRender.push_back(text);
+}
+
+void Eng::Base::postRedisplay() {
+   glutPostRedisplay();
 }

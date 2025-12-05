@@ -180,118 +180,103 @@ void ENG_API OvoReader::parse_object(char* data, unsigned int& position)
 
 Material ENG_API* OvoReader::parse_material(char* data, unsigned int& position, const char* texture_dir)
 {
-    char materialName[FILENAME_MAX];
-    strcpy(materialName, data + position);
-    position += strlen(materialName) + 1; // Nome con terminazione '\0'
+   char materialName[FILENAME_MAX];
+   strcpy(materialName, data + position);
+   position += strlen(materialName) + 1;
 
-    glm::vec3 emission, albedo;
-    float roughness, metalness, transparency;
+   std::cout << "[OvoReader] Parsing Material: '" << materialName << "'" << std::endl; // <--- LOG
 
-    // Leggi emission
-    memcpy(&emission, data + position, sizeof(glm::vec3));
-    position += sizeof(glm::vec3);
+   glm::vec3 emission, albedo;
+   float roughness, metalness, transparency;
 
-    // Leggi albedo
-    memcpy(&albedo, data + position, sizeof(glm::vec3));
-    position += sizeof(glm::vec3);
+   memcpy(&emission, data + position, sizeof(glm::vec3));
+   position += sizeof(glm::vec3);
+   memcpy(&albedo, data + position, sizeof(glm::vec3));
+   position += sizeof(glm::vec3);
+   memcpy(&roughness, data + position, sizeof(float));
+   position += sizeof(float);
+   memcpy(&metalness, data + position, sizeof(float));
+   position += sizeof(float);
+   memcpy(&transparency, data + position, sizeof(float));
+   position += sizeof(float);
 
-    // Leggi roughness
-    memcpy(&roughness, data + position, sizeof(float));
-    position += sizeof(float);
+   // Texture filenames
+   char albedoTexture[FILENAME_MAX];
+   strcpy(albedoTexture, data + position);
+   position += (unsigned int)strlen(albedoTexture) + 1;
 
-    // Leggi metalness
-    memcpy(&metalness, data + position, sizeof(float));
-    position += sizeof(float);
+   char normalMapTexture[FILENAME_MAX];
+   strcpy(normalMapTexture, data + position);
+   position += (unsigned int)strlen(normalMapTexture) + 1;
 
-    // Leggi transparency
-    memcpy(&transparency, data + position, sizeof(float));
-    position += sizeof(float);
+   char heightMapTexture[FILENAME_MAX];
+   strcpy(heightMapTexture, data + position);
+   position += (unsigned int)strlen(heightMapTexture) + 1;
 
-    // Leggi percorsi texture
-    char albedoTexture[FILENAME_MAX];
-    strcpy(albedoTexture, data + position);
-    position += (unsigned int)strlen(albedoTexture) + 1;
+   char roughnessTexture[FILENAME_MAX];
+   strcpy(roughnessTexture, data + position);
+   position += (unsigned int)strlen(roughnessTexture) + 1;
 
-    char normalMapTexture[FILENAME_MAX];
-    strcpy(normalMapTexture, data + position);
-    position += (unsigned int)strlen(normalMapTexture) + 1;
+   char metalnessTexture[FILENAME_MAX];
+   strcpy(metalnessTexture, data + position);
+   position += (unsigned int)strlen(metalnessTexture) + 1;
 
-    char heightMapTexture[FILENAME_MAX];
-    strcpy(heightMapTexture, data + position);
-    position += (unsigned int)strlen(heightMapTexture) + 1;
+   // Crea Materiale
+   float shininess = pow(1.0f - roughness, 4) * 128.0f;
+   glm::vec4 specular4 = glm::vec4(glm::mix(glm::vec3(0.04f), albedo, metalness), 0.0f);
+   glm::vec4 emission4 = glm::vec4(emission, 0.0f);
+   glm::vec4 albedo4 = glm::vec4(albedo, 0.0f);
 
-    char roughnessTexture[FILENAME_MAX];
-    strcpy(roughnessTexture, data + position);
-    position += (unsigned int)strlen(roughnessTexture) + 1;
+   Material* material = new Material(materialName, emission4, albedo4 * 0.1f, albedo4, specular4, shininess, transparency);
 
-    char metalnessTexture[FILENAME_MAX];
-    strcpy(metalnessTexture, data + position);
-    position += (unsigned int)strlen(metalnessTexture) + 1;
+   // Gestione Texture (con fix percorso)
+   if (std::string{ albedoTexture } != "[none]") {
+      std::string path = texture_dir;
+      // Fix slash
+      if (!path.empty() && path.back() != '/' && path.back() != '\\') {
+         path += "/";
+      }
+      path += albedoTexture;
 
-    float shininess = pow(1.0f - roughness, 4) * 128.0f;
-    glm::vec4 specular4 = glm::vec4(glm::mix(glm::vec3(0.04f), albedo, metalness), 0.0f);
-    glm::vec4 emission4 = glm::vec4(emission, 0.0f);
-    glm::vec4 albedo4 = glm::vec4(albedo, 0.0f);
+      std::cout << "   [Texture] Loading Albedo: " << path << std::endl; // <--- LOG
 
-    // Crea oggetto Material
-    Material* material = new Material(materialName, emission4, albedo4 * 0.1f, albedo4, specular4, shininess, transparency);
+      Texture* t = new Texture{ albedoTexture, path };
+      material->setTexture(t);
+   }
 
-    if (std::string{ albedoTexture } != "[none]") {
-        Texture* t = new Texture{ albedoTexture, std::string{texture_dir} + std::string{albedoTexture} };
-        material->setTexture(t);
-    }
-
-    return material;
+   return material;
 }
 
 Node ENG_API* OvoReader::parse_node(char* data, unsigned int& position, unsigned int* n_children)
 {
-    /*
-    unsigned int versionId;
-    memcpy(&versionId, data + position, sizeof(unsigned int));
-    //position += sizeof(unsigned int);	
 
-    char nodeName[FILENAME_MAX];
-    strcpy(nodeName, data + position);
-    position += (unsigned int)strlen(nodeName) + 1;
-    */
+   char nodeName[FILENAME_MAX];
+   strncpy(nodeName, data + position, FILENAME_MAX - 1);
+   nodeName[FILENAME_MAX - 1] = '\0';
+   position += (unsigned int)strlen(nodeName) + 1;
 
-    unsigned int versionId;
-    memcpy(&versionId, data + position, sizeof(unsigned int));
-    position += sizeof(unsigned int);  
+   std::cout << "[OvoReader] Node found: '" << nodeName << "'" << std::endl; // <--- LOG
 
-    char nodeName[FILENAME_MAX];
-    strncpy(nodeName, data + position, FILENAME_MAX - 1);
-    nodeName[FILENAME_MAX - 1] = '\0';
-    position += (unsigned int)strlen(nodeName) + 1;
+   glm::mat4 matrix;
+   memcpy(&matrix, data + position, sizeof(glm::mat4));
+   position += sizeof(glm::mat4);
 
+   unsigned int children;
+   memcpy(&children, data + position, sizeof(unsigned int));
+   *n_children = children;
+   position += sizeof(unsigned int);
 
-    //Node matrix
-    glm::mat4 matrix;
-    memcpy(&matrix, data + position, sizeof(glm::mat4));
-    matrix = glm::transpose(matrix);
-    position += sizeof(glm::mat4);
+   char targetName[FILENAME_MAX];
+   strcpy(targetName, data + position);
+   position += (unsigned int)strlen(targetName) + 1;
 
-    // Nr. of children nodes:
-    unsigned int children;
-    memcpy(&children, data + position, sizeof(unsigned int));
-    *n_children = children;
-    position += sizeof(unsigned int);
-
-    char targetName[FILENAME_MAX];
-    strcpy(targetName, data + position);
-    position += (unsigned int)strlen(targetName) + 1;
-
-    Node* node = new Node{ nodeName };
-    node->setM(matrix);
-    return node;
+   Node* node = new Node{ nodeName };
+   node->setM(matrix);
+   return node;
 }
 
 Mesh ENG_API* OvoReader::parse_mesh(char* data, unsigned int& position, unsigned int* n_children)
 {
-   unsigned int versionId;
-   memcpy(&versionId, data + position, sizeof(unsigned int));
-   position += sizeof(unsigned int);
     // Mesh name (optional for reference, not stored)
     char meshName[FILENAME_MAX];
     strcpy(meshName, data + position);
@@ -299,7 +284,7 @@ Mesh ENG_API* OvoReader::parse_mesh(char* data, unsigned int& position, unsigned
     // Mesh matrix
     glm::mat4 matrix;
     memcpy(&matrix, data + position, sizeof(glm::mat4));
-    matrix = glm::transpose(matrix);
+  
     position += sizeof(glm::mat4);
 
     // Number of children nodes
@@ -332,7 +317,10 @@ Mesh ENG_API* OvoReader::parse_mesh(char* data, unsigned int& position, unsigned
     strcpy(materialName, data + position);
     position += (unsigned int)strlen(materialName) + 1;
 
-    //Material* material = m_materials[materialName];
+    // --- LOG ---
+    std::cout << "[OvoReader] Mesh found: '" << meshName
+       << "' -> Material: '" << materialName << "'" << std::endl;
+    // -----------
 
     // Mesh bounding sphere radius:
     float radius;
@@ -493,14 +481,14 @@ Mesh ENG_API* OvoReader::parse_mesh(char* data, unsigned int& position, unsigned
     mesh->set_all_texture_coords(textureCoords);
     mesh->set_face_vertices(facesData);
 
+    std::cout << "   -> Vertices: " << vertices << ", Faces: " << faces << std::endl; // <--- LOG
+
     return mesh;
 }
 
 Light ENG_API* OvoReader::parse_light(char* data, unsigned int& position, unsigned int* n_children)
 {
-   unsigned int versionId;
-   memcpy(&versionId, data + position, sizeof(unsigned int));
-   position += sizeof(unsigned int);
+   
     // Nome della luce
     char lightName[FILENAME_MAX];
     strcpy(lightName, data + position);
@@ -508,7 +496,6 @@ Light ENG_API* OvoReader::parse_light(char* data, unsigned int& position, unsign
 
     glm::mat4 matrix;
     memcpy(&matrix, data + position, sizeof(glm::mat4));
-    matrix = glm::transpose(matrix);
     position += sizeof(glm::mat4);
 
     // Numero di figli (non usato direttamente)
@@ -534,6 +521,8 @@ Light ENG_API* OvoReader::parse_light(char* data, unsigned int& position, unsign
     default: strcpy(subtypeName, "UNDEFINED");
     }
     position += sizeof(unsigned char);
+
+    std::cout << "[OvoReader] Light found: '" << lightName << "' (" << subtypeName << ")" << std::endl; // <--- LOG
 
     // Colore (ambient, diffuse, specular)
     glm::vec3 color;
