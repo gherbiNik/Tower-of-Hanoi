@@ -55,10 +55,10 @@ build_project:
     
     # Copia il file tavolo.ovo dentro la cartella dell'eseguibile
     # (Modifica "tavolo.ovo" se il file si trova in una sottocartella, es: assets/tavolo.ovo)
-    - cp tavolo.ovo client/bin/Release/
+    - cp client/tavolo.ovo client/bin/Release/
     
     # Copia l'intera cartella texture (usando -r per "ricorsivo")
-    - cp -r texture client/bin/Release/
+    - cp -r client/texture client/bin/Release/
 
       echo "Asset copy complete."
     
