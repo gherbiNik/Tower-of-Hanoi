@@ -33,12 +33,14 @@
 // MAIN //
 //////////
 
+
+
 // Variabili globali client
 Eng::Base* engine;
 Camera* camera;
 List* list;
 Node* root;
-
+float camera_angle = 0.0f;
 
 void displayCallback() {
    // 1. LOGICA (Animazioni)
@@ -75,14 +77,27 @@ void displayCallback() {
 // Funzione callback per la tastiera
 void keyboardCallback(unsigned char key, int x, int y) {
    float speed = 5.0f; // Velocità movimento
+   float camera_rotation_speed = 5.0f; // Velocità di rotazione della camera
 
    switch (key) {
    case 'w': camera->translate(glm::vec3(0, 0, -speed)); break; // Avanti
    case 's': camera->translate(glm::vec3(0, 0, speed)); break;  // Indietro
    case 'a': camera->translate(glm::vec3(-speed, 0, 0)); break; // Sinistra
    case 'd': camera->translate(glm::vec3(speed, 0, 0)); break;  // Destra
-   case 'q': camera->translate(glm::vec3(0, speed, 0)); break;  // Su
-   case 'e': camera->translate(glm::vec3(0, -speed, 0)); break; // Giù
+   case '+': camera->translate(glm::vec3(0, speed, 0)); break;  // Su
+   case '-': camera->translate(glm::vec3(0, -speed, 0)); break; // Giù
+   case 'q': { // Ruota a sinistra
+       camera_angle += camera_rotation_speed;
+       camera->rotate(camera_rotation_speed, glm::vec3(0.0f, 1.0f, 0.0f));
+       break;
+   }
+   case 'e': { // Ruota a destra
+       camera_angle -= camera_rotation_speed;
+       camera->rotate(-camera_rotation_speed, glm::vec3(0.0f, 1.0f, 0.0f));
+       break;
+   }
+
+
    case 27: exit(0); break; // ESC per uscire
    }
    // Richiede aggiornamento
@@ -160,11 +175,12 @@ int main(int argc, char* argv[]) {
    engine->setReshapeCallback(reshapeCallback);
 
    camera = new Camera("MainCam");
-   // Sposta indietro di 3 metri (300cm) e in alto di 1.5 metri (150cm)
-   camera->translate(glm::vec3(0.0f, 150.0f, 0.0f));
-   // Inclina per guardare in basso
-   camera->rotate(-90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+   // --- SETUP VISTA FRONTALE ---
 
+    // Hard-coded
+   
+   camera->translate(glm::vec3(0.0f, 25.0f, 50.0f));
+   
 
 
    list = new List();
@@ -200,6 +216,7 @@ int main(int argc, char* argv[]) {
       root = tavoloNode;
       root->addChild(light);
       root->addChild(camera);
+
 
       std::cout << "\n--- STRUTTURA SCENA ---" << std::endl;
       printSceneGraphWithPosition(root);
