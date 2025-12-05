@@ -33,7 +33,11 @@
 // MAIN //
 //////////
 
+// Prototipi
+void checkBoundaries();
 
+// Costanti
+const float MAP_LIMIT = 55.0f; // hard-coded
 
 // Variabili globali client
 Eng::Base* engine;
@@ -129,6 +133,11 @@ void keyboardCallback(unsigned char key, int x, int y) {
         break;
 
     case 27: exit(0); break; // ESC
+    }
+
+    // Evita di uscire dalla scena (muri)
+    if (!isRotationMode) {
+        checkBoundaries();
     }
 
     engine->postRedisplay();
@@ -261,4 +270,52 @@ int main(int argc, char* argv[]) {
    delete camera;
 
    return 0;
+}
+
+void checkBoundaries() {
+    float y_lower_bound = 5.0f;
+
+    glm::mat4 mat = camera->getM();
+    glm::vec3 pos = glm::vec3(mat[3]);
+
+    bool collision = false;
+
+    // Controllo ASSE X 
+    if (pos.x > MAP_LIMIT) {
+        pos.x = MAP_LIMIT;
+        collision = true;
+    }
+    else if (pos.x < -MAP_LIMIT) {
+        pos.x = -MAP_LIMIT;
+        collision = true;
+    }
+
+    // Controllo ASSE Y 
+    if (pos.y > MAP_LIMIT) {
+        pos.y = MAP_LIMIT;
+        collision = true;
+    }
+    else if (pos.y < y_lower_bound) {
+        pos.y = y_lower_bound;
+        collision = true;
+    }
+
+    // Controllo ASSE Z 
+    if (pos.z > MAP_LIMIT) {
+        pos.z = MAP_LIMIT;
+        collision = true;
+    }
+    else if (pos.z < -MAP_LIMIT) {
+        pos.z = -MAP_LIMIT;
+        collision = true;
+    }
+
+    // Se c'è stata una collisione, aggiorniamo la matrice della camera
+    if (collision) {
+        mat[3][0] = pos.x; 
+        mat[3][1] = pos.y;
+        mat[3][2] = pos.z; 
+
+        camera->setM(mat); 
+    }
 }
