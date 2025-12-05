@@ -16,17 +16,21 @@ build_project:
     - make
     - echo "Build complete."
     
-    # Blocco unico per il packaging delle dipendenze
+    # Blocco unico per packaging e copia asset
     - |
-      mkdir -p libs
+      echo "--- Inizio Packaging ---"
       
+      # Crea le cartelle di destinazione (fondamentale per evitare errori se non esistono)
+      mkdir -p libs
+      mkdir -p client/bin/Release/texture
+
       echo "--- 1. Copia librerie principali ---"
+      # Usa || true per evitare che la pipeline fallisca se un file manca (opzionale, ma consigliato per debug)
       cp engine/bin/Release/libengine.so libs/
       cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
       cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
 
-      echo "--- 2. Copia TUTTA la suite OpenEXR (IlmThread, Imath, ecc.) ---"
-      # Questo asterisco è fondamentale: prende IlmThread, IlmImf, ecc.
+      echo "--- 2. Copia suite OpenEXR ---"
       find /usr/lib -name "libIlm*.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libImath*.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libIex*.so*" -exec cp {} libs/ \;
@@ -39,11 +43,10 @@ build_project:
       find /usr/lib -name "libjpegxr*.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libopenjp2.so*" -exec cp {} libs/ \;
       
-      echo "--- 4. Copia dipendenze generiche (Raw, Tiff, Compressioni) ---"
+      echo "--- 4. Copia dipendenze generiche ---"
       find /usr/lib -name "libraw.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libpng16.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libtiff.so*" -exec cp {} libs/ \;
-      # Queste servono spesso a Tiff e OpenEXR
       find /usr/lib -name "libdeflate.so*" -exec cp {} libs/ \;
       find /usr/lib -name "libjbig.so*" -exec cp {} libs/ \;
       find /usr/lib -name "liblzma.so*" -exec cp {} libs/ \;
@@ -51,27 +54,24 @@ build_project:
       find /usr/lib -name "libgomp.so*" -exec cp {} libs/ \;
       find /usr/lib -name "liblcms2.so*" -exec cp {} libs/ \;
 
-      echo "Copying assets..."
-    
-    # Copia il file tavolo.ovo dentro la cartella dell'eseguibile
-    # (Modifica "tavolo.ovo" se il file si trova in una sottocartella, es: assets/tavolo.ovo)
-    - cp client/tavolo.ovo client/bin/Release/
-    
-    # Copia l'intera cartella texture (usando -r per "ricorsivo")
-    - cp -r client/texture client/bin/Release/
+      echo "--- 5. COPIA ASSET (Fix tavolo.ovo) ---"
+      # Copia tavolo.ovo ESATTAMENTE accanto all'eseguibile
+      cp client/tavolo.ovo client/bin/Release/
+      
+      # Copia le texture (il contenuto della cartella)
+      # Nota: Assicurati che client/texture esista, altrimenti darà errore
+      if [ -d "client/texture" ]; then
+        cp -r client/texture/* client/bin/Release/texture/
+      else
+        echo "Warning: Cartella client/texture non trovata!"
+      fi
 
-      echo "Asset copy complete."
-    
-
-      echo "Packaging completato."
-      ls -l libs/
+      echo "Verifica contenuto cartella Release:"
+      ls -l client/bin/Release/
 
   artifacts:
     name: "$CI_JOB_NAME-artifacts"
     expire_in: 1 week
     paths:
-      - client/bin/Debug/client
-      - client/bin/Release/
-      - engine/bin/Debug/libengine.so
-      - engine/bin/Release/libengine.so
-      - libs/
+      - client/bin/Release/    # Contiene exe, ovo e texture
+      - libs/                  # Contiene le librerie .so
