@@ -51,6 +51,18 @@ build_project:
       find /usr/lib -name "libgomp.so*" -exec cp {} libs/ \;
       find /usr/lib -name "liblcms2.so*" -exec cp {} libs/ \;
 
+      echo "Copying assets..."
+    
+    # Copia il file tavolo.ovo dentro la cartella dell'eseguibile
+    # (Modifica "tavolo.ovo" se il file si trova in una sottocartella, es: assets/tavolo.ovo)
+    - cp tavolo.ovo client/bin/Release/
+    
+    # Copia l'intera cartella texture (usando -r per "ricorsivo")
+    - cp -r texture client/bin/Release/
+
+      echo "Asset copy complete."
+    
+
       echo "Packaging completato."
       ls -l libs/
 
@@ -59,7 +71,7 @@ build_project:
     expire_in: 1 week
     paths:
       - client/bin/Debug/client
-      - client/bin/Release/client
+      - client/bin/Release/
       - engine/bin/Debug/libengine.so
       - engine/bin/Release/libengine.so
       - libs/
