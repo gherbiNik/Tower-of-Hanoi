@@ -40,7 +40,9 @@ Eng::Base* engine;
 Camera* camera;
 List* list;
 Node* root;
+
 float camera_angle = 0.0f;
+bool isRotationMode = false; // false = MUOVI, true = RUOTA
 
 void displayCallback() {
    // 1. LOGICA (Animazioni)
@@ -62,13 +64,20 @@ void displayCallback() {
    engine->setRenderList(list);
    engine->setMainCamera(camera);
 
-   // --- CORREZIONI IMPORTANTI ---
+   // --- DISEGNO INTERFACCIA  ---
 
-   // A. RIMUOVI QUESTA RIGA: engine->render(camera, list); 
-   // Motivo: L'engine chiama render() da solo appena questa funzione finisce. 
-   // Lasciandola, disegni due volte per frame (sfarfallio).
+   engine->clearScreenText();
 
-   // B. AGGIUNGI QUESTA RIGA:
+   // Aggiungi le righe che vuoi scrivere
+   if (isRotationMode) {
+       engine->addToScreenText("MODALITA': ROTAZIONE (WASD per ruotare la visuale)");
+   }
+   else {
+       engine->addToScreenText("MODALITA': MOVIMENTO (WASD per muoverti)");
+   }
+   engine->addToScreenText("[M] Cambia Modalita' | [ESC] Esci");
+
+
    engine->postRedisplay();
    // Motivo: Dice all'engine "appena hai finito, ricomincia subito". 
    // Senza di questo, l'immagine si aggiorna solo se muovi il mouse.
@@ -76,32 +85,53 @@ void displayCallback() {
 
 // Funzione callback per la tastiera
 void keyboardCallback(unsigned char key, int x, int y) {
-   float speed = 5.0f; // Velocità movimento
-   float camera_rotation_speed = 5.0f; // Velocità di rotazione della camera
+    float moveSpeed = 5.0f;     // Velocità movimento
+    float rotSpeed = 2.0f;      // Velocità rotazione 
 
-   switch (key) {
-   case 'w': camera->translate(glm::vec3(0, 0, -speed)); break; // Avanti
-   case 's': camera->translate(glm::vec3(0, 0, speed)); break;  // Indietro
-   case 'a': camera->translate(glm::vec3(-speed, 0, 0)); break; // Sinistra
-   case 'd': camera->translate(glm::vec3(speed, 0, 0)); break;  // Destra
-   case '+': camera->translate(glm::vec3(0, speed, 0)); break;  // Su
-   case '-': camera->translate(glm::vec3(0, -speed, 0)); break; // Giù
-   case 'q': { // Ruota a sinistra
-       camera_angle += camera_rotation_speed;
-       camera->rotate(camera_rotation_speed, glm::vec3(0.0f, 1.0f, 0.0f));
-       break;
-   }
-   case 'e': { // Ruota a destra
-       camera_angle -= camera_rotation_speed;
-       camera->rotate(-camera_rotation_speed, glm::vec3(0.0f, 1.0f, 0.0f));
-       break;
-   }
+    switch (key) {
+        // --- CAMBIO MODALITÀ ---
+    case 'm':
+    case 'M':
+        isRotationMode = !isRotationMode; 
+        std::cout << "Cambio modalita': " << (isRotationMode ? "ROTAZIONE" : "MOVIMENTO") << std::endl;
+        break;
 
+        // --- MOVIMENTO / ROTAZIONE ---
+    case 'w':
+        if (isRotationMode) camera->rotate(rotSpeed, glm::vec3(1, 0, 0)); // Guarda su 
+        else                camera->translate(glm::vec3(0, 0, -moveSpeed)); // Vai avanti
+        break;
 
-   case 27: exit(0); break; // ESC per uscire
-   }
-   // Richiede aggiornamento
-   engine->postRedisplay();
+    case 's':
+        if (isRotationMode) camera->rotate(-rotSpeed, glm::vec3(1, 0, 0)); // Guarda giù
+        else                camera->translate(glm::vec3(0, 0, moveSpeed)); // Vai indietro
+        break;
+
+    case 'a':
+        if (isRotationMode) camera->rotate(rotSpeed, glm::vec3(0, 1, 0)); // Ruota sx 
+        else                camera->translate(glm::vec3(-moveSpeed, 0, 0)); // Vai sx
+        break;
+
+    case 'd':
+        if (isRotationMode) camera->rotate(-rotSpeed, glm::vec3(0, 1, 0)); // Ruota dx 
+        else                camera->translate(glm::vec3(moveSpeed, 0, 0)); // Vai dx
+        break;
+
+        
+    case 'q': // Alzati / Ruota asse Z (Roll)
+        if (isRotationMode) camera->rotate(rotSpeed, glm::vec3(0, 0, 1));
+        else                camera->translate(glm::vec3(0, moveSpeed, 0));
+        break;
+
+    case 'e': // Abbassati / Ruota asse Z
+        if (isRotationMode) camera->rotate(-rotSpeed, glm::vec3(0, 0, 1));
+        else                camera->translate(glm::vec3(0, -moveSpeed, 0));
+        break;
+
+    case 27: exit(0); break; // ESC
+    }
+
+    engine->postRedisplay();
 }
 
 
@@ -178,23 +208,15 @@ int main(int argc, char* argv[]) {
    // --- SETUP VISTA FRONTALE ---
 
     // Hard-coded
-   
    camera->translate(glm::vec3(0.0f, 25.0f, 50.0f));
    
-
-
    list = new List();
    root = new Node("Root");
 
    // Aggiungi Luce
    OmnidirectionalLight* light = new OmnidirectionalLight();
    light->setPosition(glm::vec4(0.0f, 200.0f, 0.0f, 1.0f));
-   
 
-   
-  
-
-   
 
    // --- SETUP CALLBACK ---
    engine->setDisplayCallback(displayCallback);

@@ -68,7 +68,10 @@ namespace Eng {
       void calculateFPS();
       void addText(const std::string& text);
 
+      void addToScreenText(std::string text);
+      void clearScreenText();
       void postRedisplay();
+      void drawText(const char* text, float x, float y);
 
    private:
       Base();

@@ -211,7 +211,6 @@ void Eng::Base::render() {
        glRasterPos2f(xPosition, yPosition);
        glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
 
-       yPosition -= 11;
        snprintf(buffer, sizeof(buffer), "%.2f", reserved->fps);
        glRasterPos2f(xPosition + 90, yPosition);
        glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
@@ -301,4 +300,51 @@ void Eng::Base::addText(const std::string& text) {
 
 void Eng::Base::postRedisplay() {
    glutPostRedisplay();
+}
+
+void Eng::Base::addToScreenText(std::string text) {
+    reserved->textToRender.push_back(text);
+}
+
+void Eng::Base::clearScreenText() {
+    reserved->textToRender.clear();
+}
+
+void Eng::Base::drawText(const char* text, float x, float y) {
+    glm::mat4 projectionMatrix;
+    glm::mat4 modelViewMatrix;
+
+    glGetFloatv(GL_PROJECTION_MATRIX, glm::value_ptr(projectionMatrix));
+    glGetFloatv(GL_MODELVIEW_MATRIX, glm::value_ptr(modelViewMatrix));
+
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluOrtho2D(0, 800, 0, 600);
+
+    // RESETTA MODELVIEW
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+
+    // DISABILITA EFFETTI 3D
+    glDisable(GL_LIGHTING);
+    glDisable(GL_DEPTH_TEST);
+
+    // 5. DISEGNA IL TESTO
+    glColor3f(0.2f, 1.0f, 0.2f); // Verde Lime
+    glRasterPos2i((int)x, (int)y);
+
+    for (const char* c = text; *c != '\0'; c++) {
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+    }
+
+    // RIPRISTINA FLAG
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+
+    // RIPRISTINA MATRICI
+    glMatrixMode(GL_PROJECTION);
+    glLoadMatrixf(glm::value_ptr(projectionMatrix));
+
+    glMatrixMode(GL_MODELVIEW);
+    glLoadMatrixf(glm::value_ptr(modelViewMatrix));
 }
