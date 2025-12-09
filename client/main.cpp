@@ -55,6 +55,7 @@ void placeDisc(DiscState& disc, int pegIdx, int stackIdx);
 void updateHeldDiscVisual(float t);
 void buildCameraPresets();
 void applyCameraPreset(int idx);
+void updateSelectionVisuals();
 
 // Costanti
 const float MAP_LIMIT = 55.0f; // hard-coded
@@ -68,6 +69,9 @@ Eng::Base* engine;
 Camera* camera;
 List* list;
 Node* root;
+
+Node* selectionSpot = nullptr;    // Per 'Spot001'
+Node* selectionPyramid = nullptr; // Per 'Pyramid001'
 
 float camera_angle = 0.0f;
 bool isRotationMode = false; // false = MUOVI, true = RUOTA
@@ -125,21 +129,9 @@ void displayCallback() {
        engine->addToScreenText("MODALITA': MOVIMENTO (WASD per muoverti)");
    }
    engine->addToScreenText("[M] Cambia Modalita' | [P] Camera principale | [ESC] Esci");
-   engine->addToScreenText("Freccia SX/DX: cambia piolo | SU: prendi disco | GIU: lascia");
-   std::string status = "Piolo selezionato: " + std::to_string(selectedPeg + 1);
-   if (heldDisc.has_value()) {
-      status += " | Disco in mano: " + std::to_string(heldDisc->sizeRank);
-   }
-   else {
-      auto& stack = pegStacks[selectedPeg];
-      if (!stack.empty()) {
-         status += " | Disco in cima: " + std::to_string(stack.back().sizeRank);
-      }
-      else {
-         status += " | Nessun disco su questo piolo";
-      }
-   }
-   engine->addToScreenText(status);
+   engine->addToScreenText("Freccia SX/DX: cambia piolo");
+   engine->addToScreenText("Freccia SU: prendi disco");
+   engine->addToScreenText("Freccia GIU: lascia");
 
 
    engine->postRedisplay();
@@ -149,13 +141,8 @@ void displayCallback() {
 
 // Funzione callback per la tastiera
 void keyboardCallback(unsigned char key, int x, int y) {
-<<<<<<< HEAD
-    float moveSpeed = 1.0f;     // Velocità movimento
-    float rotSpeed = 2.0f;      // Velocità rotazione 
-=======
-    float moveSpeed = 5.0f;     // Velocitï¿½ movimento
-    float rotSpeed = 2.0f;      // Velocitï¿½ rotazione 
->>>>>>> 26aacbece7ac7dd8108c5733a8bac38b285909b6
+    float moveSpeed = 1.0f;     // VelocitÃ  movimento
+    float rotSpeed = 2.0f;      // VelocitÃ  rotazione 
 
     switch (key) {
         // --- CAMBIO MODALITï¿½ ---
@@ -303,7 +290,8 @@ int main(int argc, char* argv[]) {
    // --- SETUP VISTA FRONTALE ---
 
     // Hard-coded
-   camera->translate(glm::vec3(0.0f, 25.0f, 50.0f));
+   camera->translate(glm::vec3(0.0f, 50.0f, 50.0f));
+   camera->rotate(-25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
    mainCameraHome = camera->getM(); // salva posizione iniziale della camera mobile
    
    list = new List();
@@ -373,6 +361,7 @@ int main(int argc, char* argv[]) {
 
 void updateSelectedPeg(int delta) {
    selectedPeg = (selectedPeg + delta + 3) % 3;
+   updateSelectionVisuals();
 }
 
 int parseDiscSize(const std::string& name) {
@@ -412,8 +401,8 @@ void buildCameraPresets() {
 
    camPresets[0] = center + glm::vec3(0.0f, dist * 0.6f, dist);    // frontale alto
    camPresets[1] = center + glm::vec3(dist, dist * 0.5f, 0.0f);    // laterale destra
-   camPresets[2] = center + glm::vec3(0.0f, dist * 1.8f, 0.0f);    // top-down
-   camPresets[3] = center + glm::vec3(-dist, dist * 0.7f, -dist);  // isometrica opposta
+   camPresets[2] = center + glm::vec3(0.0f, dist * 0.9f, 0.0f);    // top-down
+   camPresets[3] = center + glm::vec3(-dist, dist * 0.3f, -dist);  // isometrica opposta
 }
 
 void applyCameraPreset(int idx) {
@@ -423,6 +412,31 @@ void applyCameraPreset(int idx) {
    glm::mat4 view = glm::lookAt(pos, camTargetCenter, up);
    glm::mat4 world = glm::inverse(view);
    camera->setM(world);
+}
+
+void updateSelectionVisuals() {
+   // Controllo di sicurezza
+   if (selectedPeg < 0 || selectedPeg > 2) return;
+
+   // Prendiamo la posizione X e Z del piolo attuale
+   glm::vec3 pegPos = pegPositions[selectedPeg];
+
+   // 1. Sposta la Luce (Spot001)
+   if (selectionSpot) {
+      glm::mat4 m = selectionSpot->getM();
+      // Modifichiamo solo X e Z, lasciando Y (altezza) invariata
+      m[3][0] = pegPos.x;
+      m[3][2] = pegPos.z;
+      selectionSpot->setM(m);
+   }
+
+   // 2. Sposta la Piramide (Pyramid001)
+   if (selectionPyramid) {
+      glm::mat4 m = selectionPyramid->getM();
+      m[3][0] = pegPos.x;
+      m[3][2] = pegPos.z;
+      selectionPyramid->setM(m);
+   }
 }
 
 void initHanoiState(Node* root) {
@@ -502,8 +516,17 @@ void initHanoiState(Node* root) {
    // Prepara telecamere fisse
    buildCameraPresets();
 
+
    selectedPeg = pegMax;
    heldDisc.reset();
+
+   selectionSpot = root->findByName("Spot001");
+   selectionPyramid = root->findByName("Pyramid001");
+
+   // Aggiorna subito la posizione iniziale
+   updateSelectionVisuals();
+
+
 }
 
 void pickupDisc() {

@@ -201,36 +201,48 @@ void Eng::Base::render() {
 
    // Text color set to white
    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-   char buffer[64];
 
-   // --- Disegno FPS ---
+   // IMPOSTAZIONI DISTANZA (Modifica questo valore per allontanare tutto dai bordi)
+   float margin = 20.0f;
+   float yStart = (float)reserved->windowHeight - margin;
+
+   // --- 1. DISEGNO FPS (ALLINEATO A DESTRA) ---
    if (reserved->show_fps) {
-       float yPosition = reserved->windowHeight - 12.0f;
-       float xPosition = reserved->windowWidth - 220.0f;
+      char fpsBuffer[64];
+      // Creiamo la stringa completa
+      snprintf(fpsBuffer, sizeof(fpsBuffer), "FPS: %.2f", reserved->fps);
 
-       snprintf(buffer, sizeof(buffer), "FPS:");
-       glRasterPos2f(xPosition, yPosition);
-       glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
+      // Calcoliamo quanto è lunga in pixel questa specifica stringa
+      int textWidth = glutBitmapLength(GLUT_BITMAP_8_BY_13, (unsigned char*)fpsBuffer);
 
-       snprintf(buffer, sizeof(buffer), "%.2f", reserved->fps);
-       glRasterPos2f(xPosition + 90, yPosition);
-       glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
+      // Calcoliamo la X in modo che finisca esattamente a 'margin' dal bordo destro
+      float fpsX = (float)reserved->windowWidth - textWidth - margin;
+
+      glRasterPos2f(fpsX, yStart);
+      glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)fpsBuffer);
    }
 
-   float textYPosition = reserved->windowHeight - 12.0f;
+   // --- 2. DISEGNO TESTO (ALLINEATO A SINISTRA) ---
+   float textYPosition = yStart; // Partiamo dalla stessa altezza degli FPS
+
    if (!reserved->textToRender.empty())
    {
-       for (const auto& toPrint : reserved->textToRender) {
-           snprintf(buffer, sizeof(buffer), "%s", toPrint.c_str());
-           glRasterPos2f(0.0f, textYPosition);
-           glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
-           textYPosition -= 11;
-       }
+      char buffer[256];
+      for (const auto& toPrint : reserved->textToRender) {
+         snprintf(buffer, sizeof(buffer), "%s", toPrint.c_str());
+
+         // X fissa al margine sinistro
+         glRasterPos2f(margin, textYPosition);
+
+         glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
+
+         // Scendiamo per la riga successiva
+         textYPosition -= 15.0f; // Spazio tra le righe
+      }
    }
    // End 2D
 
    glEnable(GL_LIGHTING);
-
    glutSwapBuffers();
 }
 
