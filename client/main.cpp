@@ -89,7 +89,7 @@ void displayCallback() {
 
 // Funzione callback per la tastiera
 void keyboardCallback(unsigned char key, int x, int y) {
-    float moveSpeed = 5.0f;     // Velocità movimento
+    float moveSpeed = 1.0f;     // Velocità movimento
     float rotSpeed = 2.0f;      // Velocità rotazione 
 
     switch (key) {
@@ -222,9 +222,11 @@ int main(int argc, char* argv[]) {
    list = new List();
    root = new Node("Root");
 
+   
+
    // Aggiungi Luce
-   OmnidirectionalLight* light = new OmnidirectionalLight();
-   light->setPosition(glm::vec4(0.0f, 200.0f, 0.0f, 1.0f));
+   //OmnidirectionalLight* light = new OmnidirectionalLight();
+   //light->setPosition(glm::vec4(0.0f, 200.0f, 0.0f, 1.0f));
 
 
    // --- SETUP CALLBACK ---
@@ -244,8 +246,16 @@ int main(int argc, char* argv[]) {
       // Opzionale: scala o sposta il tavolo se è troppo grande/piccolo
       // tavoloNode->scale(glm::vec3(0.1f)); 
 
+
       root = tavoloNode;
-      root->addChild(light);
+      Node* target = root->findByName("Spot001.Target");
+      //root->removeChild(root->findByName("Omni001"));
+      
+
+      
+     
+      
+      //root->addChild(light);
       root->addChild(camera);
 
 

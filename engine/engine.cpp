@@ -126,7 +126,7 @@ void Eng::Base::setRenderList(List* list) {
 void Eng::Base::setMainCamera(Camera* camera) {
    reserved->currentCamera = camera; // Salviamo il puntatore per il rendering
 }
-
+/*
 // Main Render Function
 void Eng::Base::render(Camera* camera, List* list) {
    if (!camera || !list) return;
@@ -147,6 +147,7 @@ void Eng::Base::render(Camera* camera, List* list) {
    // 5. Swap Buffers
    glutSwapBuffers();
 }
+*/
 
 void Eng::Base::render() {
    // Safety Check sui dati interni

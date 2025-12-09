@@ -38,8 +38,8 @@ void OmnidirectionalLight::render()
     glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
     glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
 
-    // W = 1.0f per luci posizionali
-    glLightfv(lightContextID, GL_POSITION, glm::value_ptr(getPosition()));
+    GLfloat zeroPos[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    glLightfv(lightContextID, GL_POSITION, zeroPos);
 
     glLightf(lightContextID, GL_SPOT_CUTOFF, cutoff); // 180.0 per omni
 

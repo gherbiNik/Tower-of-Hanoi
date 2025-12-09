@@ -2,24 +2,27 @@
 #include <GL/freeglut.h>
 #include <glm/gtc/type_ptr.hpp>
 
-SpotLight::SpotLight() : Light(), cutoff(45.0f), spotExponent(0.0f)
+SpotLight::SpotLight() : Light(), spotExponent(0.0f)
 {
 }
 
 SpotLight::SpotLight(const std::string& name, const glm::mat4& matrix,
-    const glm::vec3& ambient, const glm::vec3& diffuse,
-    const glm::vec3& specular, const glm::vec3& dir)
-    : Light(name, matrix), cutoff(45.0f), spotExponent(0.0f)
+   const glm::vec3& ambient, const glm::vec3& diffuse,
+   const glm::vec3& specular, const glm::vec3& dir,
+   float cutoff, float exponent) // <--- NUOVO PARAMETRO
+   : Light(name, matrix), spotExponent(exponent) // <--- INIZIALIZZA QUI
 {
-    setAmbient(glm::vec4(ambient, 1.0f));
-    setDiffuse(glm::vec4(diffuse, 1.0f));
-    setSpecular(glm::vec4(specular, 1.0f));
+   setAmbient(glm::vec4(ambient, 1.0f));
+   setDiffuse(glm::vec4(diffuse, 1.0f));
+   setSpecular(glm::vec4(specular, 1.0f));
 
-    // Estrai la posizione dalla matrice di trasformazione
-    glm::vec3 position(matrix[3][0], matrix[3][1], matrix[3][2]);
-    setPosition(glm::vec4(position, 1.0f)); // w=1.0 per luce posizionale
+   setCutoff(cutoff);
 
-    setDirection(dir);
+   // Estrai la posizione dalla matrice
+   glm::vec3 position(matrix[3][0], matrix[3][1], matrix[3][2]);
+   setPosition(glm::vec4(position, 1.0f));
+
+   setDirection(dir);
 }
 
 SpotLight::~SpotLight()
@@ -58,23 +61,31 @@ float SpotLight::getSpotExponent() const
 
 void SpotLight::render()
 {
-    if (lightContextID < 0) return;
+   if (lightContextID < 0) return;
 
-    glEnable(lightContextID);
-    glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
-    glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
-    glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
-    glLightfv(lightContextID, GL_POSITION, glm::value_ptr(getPosition()));
+   glEnable(lightContextID);
+   glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
+   glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
+   glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
 
-    glLightf(lightContextID, GL_SPOT_CUTOFF, cutoff);
+   // --- FIX POSIZIONE ---
+   // Usiamo (0,0,0,1) perché la ModelView Matrix (caricata dalla List)
+   // ha già spostato il "cursore" nel punto esatto della luce.
+   GLfloat zeroPos[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+   glLightfv(lightContextID, GL_POSITION, zeroPos);
 
-    // Direzione dello spot
-    glLightfv(lightContextID, GL_SPOT_DIRECTION, glm::value_ptr(direction));
+   
+   // La ModelView Matrix contiene già la rotazione necessaria per puntare al target.
+   GLfloat defaultDir[] = { 0.0f, -1.0f, 0.0f };
+   glLightfv(lightContextID, GL_SPOT_DIRECTION, defaultDir);
 
-    glLightf(lightContextID, GL_SPOT_EXPONENT, spotExponent);
+   // Parametri Spot
+   glLightf(lightContextID, GL_SPOT_CUTOFF, cutoff);
 
-    // Attenuazione
-    glLightf(lightContextID, GL_CONSTANT_ATTENUATION, 1.0f);
-    glLightf(lightContextID, GL_LINEAR_ATTENUATION, 0.0f);
-    glLightf(lightContextID, GL_QUADRATIC_ATTENUATION, 0.0f);
+   glLightf(lightContextID, GL_SPOT_EXPONENT, 0.0f);
+
+   // Attenuazione (standard)
+   glLightf(lightContextID, GL_CONSTANT_ATTENUATION, 1.0f);
+   glLightf(lightContextID, GL_LINEAR_ATTENUATION, 0.0f);
+   glLightf(lightContextID, GL_QUADRATIC_ATTENUATION, 0.0f);
 }
