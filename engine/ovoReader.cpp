@@ -537,6 +537,7 @@ Light ENG_API* OvoReader::parse_light(char* data, unsigned int& position, unsign
     // Direzione (solo per luci Spot)
     glm::vec3 direction;
     memcpy(&direction, data + position, sizeof(glm::vec3));
+    //std::cout << direction.x << " "<< direction.y << " "<< direction.z << " "<< std::endl;
     position += sizeof(glm::vec3);
 
     // Angolo di cutoff (solo per luci Spot)
@@ -580,8 +581,8 @@ Light ENG_API* OvoReader::parse_light(char* data, unsigned int& position, unsign
     else if ((OvLight::Subtype)subtype == OvLight::Subtype::SPOT) { // SpotLight
         attenuation = glm::clamp(10.0f / radius, 0.0f, 1.0f);
         SpotLight* spotLight = new SpotLight(
-            lightName, matrix, color, color, color, direction
-            //, constantAttenuation,linearAttenuation, quadraticAttenuation, cutoff
+            lightName, matrix, color, color, color, direction, cutoff, spotExponent
+            //, constantAttenuation,linearAttenuation, quadraticAttenuation
         );
         light = spotLight;
     }

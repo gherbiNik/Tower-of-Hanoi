@@ -104,10 +104,38 @@ void Eng::Base::setSpecialCallback(SpecialCallback cb) { reserved->clientSpecial
 
 // Utility Render
 void Eng::Base::setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
-void Eng::Base::setRenderList(List* list) { reserved->currentList = list; }
-void Eng::Base::setMainCamera(Camera* camera) { reserved->currentCamera = camera; }
 
-// --- MAIN RENDER LOOP ---
+
+void Eng::Base::setRenderList(List* list) {
+   reserved->currentList = list; // Salviamo il puntatore per il rendering
+}
+
+void Eng::Base::setMainCamera(Camera* camera) {
+   reserved->currentCamera = camera; // Salviamo il puntatore per il rendering
+}
+/*
+// Main Render Function
+void Eng::Base::render(Camera* camera, List* list) {
+   if (!camera || !list) return;
+
+   // 1. Pulisci buffer
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+   // 2. Setup Proiezione
+   glMatrixMode(GL_PROJECTION);
+   glLoadMatrixf(glm::value_ptr(camera->getProjectionMatrix()));
+
+   // 3. Ottieni View Matrix (Inversa della camera)
+   glm::mat4 viewMatrix = camera->getInvCameraMatrix();
+
+   // 4. Renderizza la lista
+   list->render(viewMatrix);
+
+   // 5. Swap Buffers
+   glutSwapBuffers();
+}
+*/
+
 void Eng::Base::render() {
     if (!reserved->currentCamera || !reserved->currentList) return;
 

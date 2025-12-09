@@ -39,7 +39,7 @@ namespace Eng {
       void update(); // Avvia il main loop
 
       // Rendering
-      void render(Camera* camera, List* list);
+      //void render(Camera* camera, List* list);
       void render();
 
       // Callback Registration (Il client usa queste per agganciare la logica)
