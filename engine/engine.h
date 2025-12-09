@@ -73,6 +73,14 @@ namespace Eng {
       void postRedisplay();
       void drawText(const char* text, float x, float y);
 
+      void showVictory(const std::string& message);
+      void hideVictory();
+
+      void addString(float x, float y, std::string text, float r, float g, float b);
+      int getWindowWidth();
+      int getWindowHeight();
+      int getTextWidth(const std::string& text);
+
    private:
       Base();
       ~Base();
@@ -90,7 +98,6 @@ namespace Eng {
         Used to calculate the elapsed time between frames for FPS computation.
       */
       std::chrono::time_point<std::chrono::steady_clock> lastTime;
-      ////
    
    };
 
