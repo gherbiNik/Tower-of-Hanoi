@@ -19,6 +19,7 @@ struct Eng::Base::Reserved
     // --- DATI SCENA  ---
     Camera* currentCamera = nullptr;
     List* currentList = nullptr;
+    List* reflectionList = nullptr;
 
     // -- WINDOW STATE -- 
     int windowWidth = 800; // default init
@@ -110,92 +111,95 @@ void Eng::Base::setRenderList(List* list) {
    reserved->currentList = list; // Salviamo il puntatore per il rendering
 }
 
+void Eng::Base::setReflectionList(List* list) {
+   reserved->reflectionList = list;
+}
+
 void Eng::Base::setMainCamera(Camera* camera) {
    reserved->currentCamera = camera; // Salviamo il puntatore per il rendering
 }
-/*
-// Main Render Function
-void Eng::Base::render(Camera* camera, List* list) {
-   if (!camera || !list) return;
 
-   // 1. Pulisci buffer
-   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-   // 2. Setup Proiezione
-   glMatrixMode(GL_PROJECTION);
-   glLoadMatrixf(glm::value_ptr(camera->getProjectionMatrix()));
-
-   // 3. Ottieni View Matrix (Inversa della camera)
-   glm::mat4 viewMatrix = camera->getInvCameraMatrix();
-
-   // 4. Renderizza la lista
-   list->render(viewMatrix);
-
-   // 5. Swap Buffers
-   glutSwapBuffers();
-}
-*/
 
 void Eng::Base::render() {
-    if (!reserved->currentCamera || !reserved->currentList) return;
+   if (!reserved->currentCamera || !reserved->currentList) return;
 
-    // === SCENA 3D ===
-    glEnable(GL_DEPTH_TEST);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_TEXTURE_2D);
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+   // === SCENA 3D ===
+   glEnable(GL_DEPTH_TEST);
+   glEnable(GL_LIGHTING);
+   glEnable(GL_TEXTURE_2D);
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadMatrixf(glm::value_ptr(reserved->currentCamera->getProjectionMatrix()));
+   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glm::mat4 viewMatrix = reserved->currentCamera->getInvCameraMatrix();
-    reserved->currentList->render(viewMatrix);
 
-    // === OVERLAY 2D ===
-    calculateFPS();
 
-    glDisable(GL_LIGHTING);
-    glDisable(GL_TEXTURE_2D);
-    glDisable(GL_DEPTH_TEST);
+   glMatrixMode(GL_PROJECTION);
+   glLoadMatrixf(glm::value_ptr(reserved->currentCamera->getProjectionMatrix()));
 
-    // Proiezione Ortogonale
-    glMatrixMode(GL_PROJECTION);
-    glm::mat4 ortho = glm::ortho(0.0f, (float)reserved->windowWidth, 0.0f, (float)reserved->windowHeight, -1.0f, 1.0f);
-    glLoadMatrixf(glm::value_ptr(ortho));
+   glm::mat4 viewMatrix = reserved->currentCamera->getInvCameraMatrix();
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadMatrixf(glm::value_ptr(glm::mat4(1.0f)));
+   if (reserved->reflectionList) {
+      // Invertiamo il "Front Face" perch  la scala -1 capovolge i triangoli
+      glFrontFace(GL_CW);
 
-    // Visualizzazione FPS 
-    if (reserved->show_fps) {
-        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-        char buffer[64];
-        snprintf(buffer, sizeof(buffer), "FPS: %.2f", reserved->fps);
-        glRasterPos2f(reserved->windowWidth - 100.0f, reserved->windowHeight - 12.0f);
-        glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
-    }
+      // Opzionale: rendiamo il riflesso leggermente trasparente o scuro se non abbiamo un piano specchiato reale
+      // Per ora lo disegniamo normale, apparir  "sotto" il tavolo.
 
-    // Visualizzazione Menu
-    float textYPosition = reserved->windowHeight - 12.0f;
-    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
-    for (const auto& toPrint : reserved->consoleText) {
-        glRasterPos2f(0.0f, textYPosition);
-        glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)toPrint.c_str());
-        textYPosition -= 12;
-    }
+      reserved->reflectionList->render(viewMatrix);
 
-    // Messaggio di vittoria
-    void* guiFont = GLUT_BITMAP_TIMES_ROMAN_24;
-    for (const auto& item : reserved->guiText) {
-        glColor3f(item.r, item.g, item.b);
-        glRasterPos2f(item.x, item.y);
-        glutBitmapString(guiFont, (const unsigned char*)item.text.c_str());
-    }
+      // Ripristiniamo il Front Face standard (Counter-Clockwise)
+      glFrontFace(GL_CCW);
+   }
+   reserved->currentList->render(viewMatrix);
 
-    glEnable(GL_LIGHTING);
-    glutSwapBuffers();
+   // === OVERLAY 2D ===
+
+
+   calculateFPS();
+
+   glDisable(GL_LIGHTING);
+   glDisable(GL_TEXTURE_2D);
+   glDisable(GL_DEPTH_TEST);
+
+   // Proiezione Ortogonale
+   glMatrixMode(GL_PROJECTION);
+   glm::mat4 ortho = glm::ortho(0.0f, (float)reserved->windowWidth, 0.0f, (float)reserved->windowHeight, -1.0f, 1.0f);
+   glLoadMatrixf(glm::value_ptr(ortho));
+
+   glMatrixMode(GL_MODELVIEW);
+   glLoadMatrixf(glm::value_ptr(glm::mat4(1.0f)));
+
+
+
+   // Visualizzazione FPS 
+   if (reserved->show_fps) {
+      glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+      char buffer[64];
+      snprintf(buffer, sizeof(buffer), "FPS: %.2f", reserved->fps);
+      glRasterPos2f(reserved->windowWidth - 100.0f, reserved->windowHeight - 12.0f);
+      glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)buffer);
+   }
+
+   // Visualizzazione Menu
+   float textYPosition = reserved->windowHeight - 12.0f;
+   glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+   for (const auto& toPrint : reserved->consoleText) {
+      glRasterPos2f(0.0f, textYPosition);
+      glutBitmapString(GLUT_BITMAP_8_BY_13, (unsigned char*)toPrint.c_str());
+      textYPosition -= 12;
+   }
+
+   // Messaggio di vittoria
+   void* guiFont = GLUT_BITMAP_TIMES_ROMAN_24;
+   for (const auto& item : reserved->guiText) {
+      glColor3f(item.r, item.g, item.b);
+      glRasterPos2f(item.x, item.y);
+      glutBitmapString(guiFont, (const unsigned char*)item.text.c_str());
+   }
+
+   glEnable(GL_LIGHTING);
+   glutSwapBuffers();
 }
 
 void Eng::Base::handleDisplayRequest() {

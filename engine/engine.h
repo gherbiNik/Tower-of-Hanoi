@@ -32,6 +32,7 @@ namespace Eng {
       bool free();
 
       void setRenderList(List* list);
+      void setReflectionList(List* list);
       void setMainCamera(Camera* camera);
 
       // Gestione Finestra e Loop

@@ -44,6 +44,7 @@ const float MAP_LIMIT = 55.0f;
 Eng::Base* engine;
 Camera* camera;
 List* list;
+List* reflectionList = nullptr;
 Node* root;
 OvoReader ovoreader{};
 Node* tavoloNode;
@@ -109,6 +110,19 @@ float stackStepY = 0.7f; // valore predefinito, ricalcolato all'avvio
 int selectedPeg = 0;
 std::optional<DiscState> heldDisc;
 
+glm::mat4 getReflectionMatrix(float planeHeight) {
+   glm::mat4 mat(1.0f);
+
+   // 1. Sposta al piano
+   mat = glm::translate(mat, glm::vec3(0.0f, planeHeight, 0.0f));
+   // 2. Specchia l'asse Y
+   mat = glm::scale(mat, glm::vec3(1.0f, -1.0f, 1.0f));
+   // 3. Sposta indietro
+   mat = glm::translate(mat, glm::vec3(0.0f, -planeHeight, 0.0f));
+
+   return mat;
+}
+
 void displayCallback() {
     // 1. Logica Scena
     static float angle = 0.0f;
@@ -149,6 +163,49 @@ void displayCallback() {
     if (isWon) {
         drawCenteredText("HAI VINTO!", 0.0f, 0.2f, 1.0f, 0.2f); // Verde Lime
         drawCenteredText("Premi [R] per ricominciare", -30.0f, 1.0f, 1.0f, 1.0f); // Bianco
+    }
+
+    if (reflectionList) {
+       reflectionList->clear();
+
+       // 1. Definiamo il piano del tavolo
+       // Deve coincidere con la superficie superiore del tavolo.
+       // Se la base della torre è appoggiata sopra, prendiamo la sua Y.
+       float tableHeight = 16.5f;
+
+       // 2. Calcola matrice di riflessione
+       glm::mat4 reflectMat = getReflectionMatrix(tableHeight);
+
+       // 3. Aggiungi gli oggetti da specchiare
+       // Cerchiamo la "Base" e i dischi/pioli. 
+       // Se sono tutti figli di un nodo comune (es. "Tavolo" o "HanoiRoot"), basta quello.
+       // Altrimenti li aggiungiamo uno per uno o tramite ricerca.
+
+       // Aggiungiamo la Base della torre
+       Node* baseNode = root->findByName("Base");
+       if (baseNode) reflectionList->pass(baseNode, reflectMat);
+
+       // Aggiungiamo i 3 Pali
+       for (int i = 1; i <= 3; i++) {
+          std::string nome = "Palo" + std::to_string(i);
+          Node* palo = root->findByName(nome);
+          if (palo) reflectionList->pass(palo, reflectMat);
+       }
+
+       // Aggiungiamo i 7 Dischi
+       for (int i = 1; i <= 7; i++) {
+          std::string nome = "Disco" + std::to_string(i);
+          Node* disco = root->findByName(nome);
+          if (disco) reflectionList->pass(disco, reflectMat);
+       }
+
+       for (int i = 1; i <= 5; i++) {
+          std::string nome = "Omni00" + std::to_string(i);
+          Node* luce = root->findByName(nome);
+          if (luce) reflectionList->pass(luce, reflectMat);
+       }
+       // 4. Passa all'engine
+       engine->setReflectionList(reflectionList);
     }
 
     engine->postRedisplay();
@@ -331,6 +388,7 @@ int main(int argc, char* argv[]) {
    mainCameraHome = camera->getM(); // salva posizione iniziale della camera mobile
    
    list = new List();
+   reflectionList = new List();
    root = new Node("Root");
 
    
@@ -355,10 +413,6 @@ int main(int argc, char* argv[]) {
       root->addChild(camera);
 
       initHanoiState(root);
-
-      std::cout << "\n--- STRUTTURA SCENA ---" << std::endl;
-      printSceneGraphWithPosition(root);
-      std::cout << "-----------------------\n" << std::endl;
    }
    else {
       std::cerr << "Errore critico: impossibile caricare tavolo.ovo" << std::endl;
@@ -368,6 +422,7 @@ int main(int argc, char* argv[]) {
     engine->free();
 
     delete list;
+    delete reflectionList;
     delete camera;
     return 0;
 }
