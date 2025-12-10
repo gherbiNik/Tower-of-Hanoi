@@ -83,12 +83,13 @@ void updateHeldDiscVisual(float t);
 void buildCameraPresets();
 void applyCameraPreset(int idx);
 void updateSelectionVisuals();
+bool checkWinCondition();
 
 // Costanti
-constexpr int GLUT_KEY_LEFT = 100;
-constexpr int GLUT_KEY_UP = 101;
-constexpr int GLUT_KEY_RIGHT = 102;
-constexpr int GLUT_KEY_DOWN = 103;
+const int KEY_LEFT = 100;
+const int KEY_UP = 101;
+const int KEY_RIGHT = 102;
+const int KEY_DOWN = 103;
 
 // Helper client-side per centrare il testo usando API engine
 void drawCenteredText(std::string text, float yOffset, float r, float g, float b) {
@@ -211,14 +212,11 @@ void keyboardCallback(unsigned char key, int x, int y) {
     case '3': applyCameraPreset(2); isPresetView = true; break;
     case '4': applyCameraPreset(3); isPresetView = true; break;
 
-        // Logica Gioco
-    case 'v': case 'V':
-        isWon = true;
-        break;
-
+   
     case 'r': case 'R':
     {
         std::cout << "[GAME] Ricaricamento livello..." << std::endl;
+        isWon = false;
 
         // Dobbiamo staccare la camera dal vecchio grafo, altrimenti se cancelliamo
         // la root e il distruttore cancella i figli, perderemmo anche la camera.
@@ -558,23 +556,32 @@ void pickupDisc() {
 
 void dropDisc() {
    if (!heldDisc.has_value()) return;
+
    auto& stack = pegStacks[selectedPeg];
    // Vietato posare un disco più grande sopra uno più piccolo
    if (!stack.empty() && heldDisc->sizeRank > stack.back().sizeRank) {
       return;
    }
    int idx = static_cast<int>(stack.size());
-   placeDisc(*heldDisc, selectedPeg, idx);
    stack.push_back(*heldDisc);
+   placeDisc(stack.back(), selectedPeg, idx);
+
    heldDisc.reset();
+
+   if (checkWinCondition()) {
+       isWon = true;
+       std::cout << "[GAME] Hai vinto!" << std::endl;
+   }
 }
 
 void specialCallback(int key, int x, int y) {
+   if (isWon) return; //Blocca il gioco se hai vinto
+
    switch (key) {
-   case GLUT_KEY_LEFT:  updateSelectedPeg(-1); break;
-   case GLUT_KEY_RIGHT: updateSelectedPeg(+1); break;
-   case GLUT_KEY_UP:    pickupDisc(); break;
-   case GLUT_KEY_DOWN:  dropDisc(); break;
+   case KEY_LEFT:  updateSelectedPeg(-1); break;
+   case KEY_RIGHT: updateSelectedPeg(+1); break;
+   case KEY_UP:    pickupDisc(); break;
+   case KEY_DOWN:  dropDisc(); break;
    default: return;
    }
    engine->postRedisplay();
@@ -617,4 +624,24 @@ void checkBoundaries() {
         mat[3][0] = pos.x; mat[3][1] = pos.y; mat[3][2] = pos.z;
         camera->setM(mat);
     }
+}
+bool checkWinCondition() {
+    int totalDiscs = pegStacks[0].size() + pegStacks[1].size() + pegStacks[2].size();
+
+    if (heldDisc.has_value()) { // va compreso nel calcolo
+        totalDiscs++;
+    }
+    // Non puoi vincere se stai ancora tenendo un disco
+    if (heldDisc.has_value()) {
+        return false;
+    }
+
+    // Tutti i dischi devono essere sull'ultimo piolo (indice 0 -> Palo3).
+    // Attenzione alla camera si usa per guardare la scena
+    if (pegStacks[0].size() == totalDiscs && totalDiscs > 0) {
+        // == 2 test purpose
+        return true;
+    }
+    
+    return false;
 }
