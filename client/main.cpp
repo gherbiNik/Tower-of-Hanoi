@@ -27,6 +27,7 @@
 Eng::Base* engine;
 Camera* camera;
 List* list;
+List* reflectionList = nullptr;
 Node* root;
 OvoReader ovoreader{};
 Node* tavoloNode;
@@ -53,6 +54,19 @@ void specialCallback(int key, int x, int y) {
     if (hanoiGame) {
         hanoiGame->specialCallback(key, x, y);
     }
+}
+
+glm::mat4 getReflectionMatrix(float planeHeight) {
+   glm::mat4 mat(1.0f);
+
+   // 1. Sposta al piano
+   mat = glm::translate(mat, glm::vec3(0.0f, planeHeight, 0.0f));
+   // 2. Specchia l'asse Y
+   mat = glm::scale(mat, glm::vec3(1.0f, -1.0f, 1.0f));
+   // 3. Sposta indietro
+   mat = glm::translate(mat, glm::vec3(0.0f, -planeHeight, 0.0f));
+
+   return mat;
 }
 
 void displayCallback() {
@@ -90,6 +104,49 @@ void displayCallback() {
     if (hanoiGame && hanoiGame->isGameWon()) {
         drawCenteredText("HAI VINTO!", 0.0f, 0.2f, 1.0f, 0.2f); // Verde Lime
         drawCenteredText("Premi [R] per ricominciare", -30.0f, 1.0f, 1.0f, 1.0f); // Bianco
+    }
+
+    if (reflectionList) {
+       reflectionList->clear();
+
+       // 1. Definiamo il piano del tavolo
+       // Deve coincidere con la superficie superiore del tavolo.
+       // Se la base della torre è appoggiata sopra, prendiamo la sua Y.
+       float tableHeight = 16.5f;
+
+       // 2. Calcola matrice di riflessione
+       glm::mat4 reflectMat = getReflectionMatrix(tableHeight);
+
+       // 3. Aggiungi gli oggetti da specchiare
+       // Cerchiamo la "Base" e i dischi/pioli. 
+       // Se sono tutti figli di un nodo comune (es. "Tavolo" o "HanoiRoot"), basta quello.
+       // Altrimenti li aggiungiamo uno per uno o tramite ricerca.
+
+       // Aggiungiamo la Base della torre
+       Node* baseNode = root->findByName("Base");
+       if (baseNode) reflectionList->pass(baseNode, reflectMat);
+
+       // Aggiungiamo i 3 Pali
+       for (int i = 1; i <= 3; i++) {
+          std::string nome = "Palo" + std::to_string(i);
+          Node* palo = root->findByName(nome);
+          if (palo) reflectionList->pass(palo, reflectMat);
+       }
+
+       // Aggiungiamo i 7 Dischi
+       for (int i = 1; i <= 7; i++) {
+          std::string nome = "Disco" + std::to_string(i);
+          Node* disco = root->findByName(nome);
+          if (disco) reflectionList->pass(disco, reflectMat);
+       }
+
+       for (int i = 1; i <= 5; i++) {
+          std::string nome = "Omni00" + std::to_string(i);
+          Node* luce = root->findByName(nome);
+          if (luce) reflectionList->pass(luce, reflectMat);
+       }
+       // 4. Passa all'engine
+       engine->setReflectionList(reflectionList);
     }
 
     engine->postRedisplay();
@@ -235,14 +292,17 @@ int main(int argc, char* argv[]) {
     engine->setDisplayCallback(displayCallback);
     engine->setReshapeCallback(reshapeCallback);
 
-    camera = new Camera("MainCam");
-    // --- SETUP VISTA FRONTALE ---
-    camera->translate(glm::vec3(0.0f, 50.0f, 50.0f));
-    camera->rotate(-25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-    mainCameraHome = camera->getM();
+   camera = new Camera("MainCam");
+   // --- SETUP VISTA FRONTALE ---
 
-    list = new List();
-    root = new Node("Root");
+    // Hard-coded
+   camera->translate(glm::vec3(0.0f, 50.0f, 50.0f));
+   camera->rotate(-25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+   mainCameraHome = camera->getM(); // salva posizione iniziale della camera mobile
+   
+   list = new List();
+   reflectionList = new List();
+   root = new Node("Root");
 
     tavoloNode = ovoreader.readFile("tavolo.ovo", "texture/");
 
@@ -271,6 +331,7 @@ int main(int argc, char* argv[]) {
     // Cleanup
     if (hanoiGame) delete hanoiGame;
     delete list;
+    delete reflectionList;
     delete camera;
     return 0;
 }

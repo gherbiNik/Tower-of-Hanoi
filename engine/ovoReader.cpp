@@ -184,10 +184,10 @@ Material ENG_API* OvoReader::parse_material(char* data, unsigned int& position, 
    strcpy(materialName, data + position);
    position += strlen(materialName) + 1;
 
-   std::cout << "[OvoReader] Parsing Material: '" << materialName << "'" << std::endl; // <--- LOG
 
    glm::vec3 emission, albedo;
    float roughness, metalness, transparency;
+   
 
    memcpy(&emission, data + position, sizeof(glm::vec3));
    position += sizeof(glm::vec3);
@@ -199,6 +199,8 @@ Material ENG_API* OvoReader::parse_material(char* data, unsigned int& position, 
    position += sizeof(float);
    memcpy(&transparency, data + position, sizeof(float));
    position += sizeof(float);
+
+   std::cout << "[OvoReader] Parsing Material: '" << materialName << "' " << transparency<< std::endl; // <--- LOG
 
    // Texture filenames
    char albedoTexture[FILENAME_MAX];
