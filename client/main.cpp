@@ -10,6 +10,7 @@
 #include "omnidirectionalLight.h"
 #include "ovoReader.h"
 
+#include "HanoiTest.h"
 #include "hanoi.h" 
 
 #include <iostream>
@@ -280,11 +281,17 @@ void printSceneGraphWithPosition(Node* node, int level = 0) {
 }
 
 int main(int argc, char* argv[]) {
+    HanoiTest testSuite;
+    testSuite.runAllTests();
+    
+    
     engine = &Eng::Base::getInstance();
     if (!engine->init(argc, argv)) return -1;
 
     engine->createWindow(800, 600, 100, 100, "Tower of Hanoi - Logic Refactored");
     engine->enableFPS();
+
+
 
     // Setup Callback
     engine->setKeyboardCallback(keyboardCallback);

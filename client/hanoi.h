@@ -39,6 +39,9 @@ public:
 
     // Getters / Setters utili
     bool isGameWon() const { return isWon; }
+    
+    int getSelectedPeg() const { return selectedPeg; }
+    bool hasHeldDisc() const { return heldDisc.has_value(); }
 
 private:
     // Dipendenze esterne
