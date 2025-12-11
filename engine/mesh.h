@@ -28,7 +28,7 @@ public:
     void setMaterial(Material* material);
     void render() override;
 
-private:
+protected:
     std::vector<glm::vec3> all_vertices;
     std::vector<glm::vec3> all_normals;
     std::vector<glm::vec2> all_texture_coords;

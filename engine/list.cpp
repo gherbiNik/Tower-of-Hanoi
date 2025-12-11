@@ -3,6 +3,7 @@
 #include <GL/freeglut.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
+#include "mesh.h"
 
 ENG_API List::List() : Object("RenderList") {}
 List::~List() { clear(); }
@@ -33,6 +34,7 @@ void List::pass(Node* node, glm::mat4 parentMatrix) {
 void List::render(glm::mat4 viewMatrix) {
    int lightCounter = 0;
    const int MAX_HARDWARE_LIGHTS = 8;
+   std::list<Instance> transp;
 
    // Spegni tutte le luci per sicurezza all'inizio del frame
    for (int i = 0; i < MAX_HARDWARE_LIGHTS; i++) glDisable(GL_LIGHT0 + i);
@@ -60,10 +62,49 @@ void List::render(glm::mat4 viewMatrix) {
          }
       }
       else {
-         // È una mesh o altro nodo, renderizza normalmente
-         inst.node->render();
+         
+         Mesh* mesh = dynamic_cast<Mesh*>(inst.node);
+         if (mesh) {
+            // Se ha un materiale e la trasparenza è < 1.0 (es. scacchiera 0.8)
+            if (mesh->getMaterial() && mesh->getMaterial()->getTransparency() < 1.0f) {
+               transp.push_back(inst);
+            }
+            else {
+               inst.node->render();
+            }
+         }
+         else {
+            
+            inst.node->render();
+         }
+
+         
+
+         
       }
+
    }
+   
+   for (auto& inst : transp) {
+      glm::mat4 modelView = viewMatrix * inst.nodeWorldMatrix;
+      glMatrixMode(GL_MODELVIEW);
+      glLoadMatrixf(glm::value_ptr(modelView));
+      glEnable(GL_BLEND);
+      
+      glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+      glDepthMask(GL_FALSE);
+      glDisable(GL_CULL_FACE); // Renderizza anche il retro delle facce trasparenti
+
+      inst.node->render();
+
+      glEnable(GL_CULL_FACE);
+      glDepthMask(GL_TRUE);
+      glDisable(GL_BLEND);
+   }
+   
+   
+
+
 }
 
 void List::render() {

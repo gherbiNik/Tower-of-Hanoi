@@ -53,6 +53,7 @@ namespace Eng {
       void setClearColor(float r, float g, float b, float a);
       void setLighting(bool enable);
       void setDepthTest(bool enable);
+      void setTexture(bool enable);
 
       // --- METODI PER LA GESTIONE EVENTI (Chiamati dai wrapper statici) ---
       void handleDisplayRequest();

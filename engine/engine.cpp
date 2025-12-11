@@ -106,6 +106,22 @@ void Eng::Base::setSpecialCallback(SpecialCallback cb) { reserved->clientSpecial
 // Utility Render
 void Eng::Base::setClearColor(float r, float g, float b, float a) { glClearColor(r, g, b, a); }
 
+void Eng::Base::setLighting(bool enable)
+{
+   if (enable)
+      glEnable(GL_LIGHTING);
+   else
+      glDisable(GL_LIGHTING);
+}
+
+void Eng::Base::setTexture(bool enable)
+{
+   if (enable)
+      glEnable(GL_TEXTURE_2D);
+   else
+      glDisable(GL_TEXTURE_2D);
+}
+
 
 void Eng::Base::setRenderList(List* list) {
    reserved->currentList = list; // Salviamo il puntatore per il rendering
@@ -127,6 +143,7 @@ void Eng::Base::render() {
    glEnable(GL_DEPTH_TEST);
    glEnable(GL_LIGHTING);
    glEnable(GL_TEXTURE_2D);
+
 
    glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 

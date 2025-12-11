@@ -45,6 +45,7 @@ Eng::Base* engine;
 Camera* camera;
 List* list;
 List* reflectionList = nullptr;
+const float FLOOR_HEIGHT = 10.0f; // Leggermente sopra lo 0 per evitare flickering
 Node* root;
 OvoReader ovoreader{};
 Node* tavoloNode;
@@ -123,6 +124,7 @@ glm::mat4 getReflectionMatrix(float planeHeight) {
    return mat;
 }
 
+
 void displayCallback() {
     // 1. Logica Scena
     static float angle = 0.0f;
@@ -164,7 +166,7 @@ void displayCallback() {
         drawCenteredText("HAI VINTO!", 0.0f, 0.2f, 1.0f, 0.2f); // Verde Lime
         drawCenteredText("Premi [R] per ricominciare", -30.0f, 1.0f, 1.0f, 1.0f); // Bianco
     }
-
+    
     if (reflectionList) {
        reflectionList->clear();
 
@@ -207,7 +209,7 @@ void displayCallback() {
        // 4. Passa all'engine
        engine->setReflectionList(reflectionList);
     }
-
+  
     engine->postRedisplay();
 }
 
@@ -294,11 +296,13 @@ void keyboardCallback(unsigned char key, int x, int y) {
 
             // Riattacca la camera salvata alla nuova root
             root->addChild(camera);
+            
+           
 
             // RESET LOGICA GIOCO
             initHanoiState(root); // Ricostruisce lo stato dei dischi
             isWon = false;
-
+            
         }
         else {
             std::cerr << "[ERROR] Impossibile ricaricare il file .ovo!" << std::endl;
@@ -406,13 +410,19 @@ int main(int argc, char* argv[]) {
       // Opzionale: scala o sposta il tavolo se � troppo grande/piccolo
       // tavoloNode->scale(glm::vec3(0.1f)); 
       root = tavoloNode;
-      Node* target = root->findByName("Spot001.Target");
+      //Node* target = root->findByName("Spot001.Target");
       //root->removeChild(root->findByName("Omni001"));
+
+      Node* base_tavolo = root->findByName("base_tavolo");
+      Mesh* base_tavolo_mesh = dynamic_cast<Mesh*>(base_tavolo);
+      base_tavolo_mesh->getMaterial()->setTransparency(0.5f);
+  
       
       //root->addChild(light);
       root->addChild(camera);
-
+      printSceneGraphWithPosition(root);
       initHanoiState(root);
+      
    }
    else {
       std::cerr << "Errore critico: impossibile caricare tavolo.ovo" << std::endl;
@@ -422,7 +432,7 @@ int main(int argc, char* argv[]) {
     engine->free();
 
     delete list;
-    delete reflectionList;
+    
     delete camera;
     return 0;
 }

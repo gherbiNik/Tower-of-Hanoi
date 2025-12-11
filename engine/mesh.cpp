@@ -25,6 +25,8 @@ void Mesh::set_face_vertices(const std::vector<std::vector<unsigned int>>& faces
 void Mesh::setMaterial(Material* material) { this->material = material; }
 
 void Mesh::render() {
+
+
     // 1. Applica Materiale
     if (material) {
         material->render(); // Attiva luci e setta i coefficienti kA, kD, kS
