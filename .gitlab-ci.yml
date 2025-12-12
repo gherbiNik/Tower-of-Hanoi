@@ -18,7 +18,7 @@ engine:
     - cd engine
   script:
     - make clean
-    - make engine
+    - make release
     # Verifica che la libreria sia stata creata
     - ls -l bin/Release/libengine.so
   after_script:
