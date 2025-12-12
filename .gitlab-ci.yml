@@ -57,7 +57,7 @@ client:
       mkdir -p libs
       
       echo "--- 1. Copia librerie principali ---"
-      cp engine/bin/Release/libengine.so libs/
+      cp bin/Release/libengine.so libs/
       cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
       cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
 
