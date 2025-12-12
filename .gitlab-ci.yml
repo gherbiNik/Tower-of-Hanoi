@@ -43,50 +43,62 @@ client:
     - make clean
     - make release
 
-    # --- PACKAGING DELLE DIPENDENZE ---
+    # --- PACKAGING ROBUSTO ---
     - echo "Inizio procedura di bundling..."
-    
     - mkdir -p bin/Release/libs
     
-    - echo "Copia Engine..."
+    # Copia Engine
     - cp ../engine/bin/Release/libengine.so bin/Release/libs/
 
-    - echo "Copia GLUT e FreeImage..."
-    - cp /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/libs/
-    - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/libs/
+    # Copia dipendenze dirette (GLUT e FreeImage)
+    # Usa -L per copiare il FILE REALE, non il collegamento simbolico
+    - cp -L /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/libs/
+    - cp -L /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/libs/
 
-    - echo "Copia dipendenze annidate (incluse JPEG mancanti)..."
+    - echo "Copia dipendenze annidate..."
     - |
       DEPENDENCIES=(
-        "libIlm*" "libImath*" "libIex*" "libHalf*"    # Suite OpenEXR
+        "libIlm*" "libImath*" "libIex*" "libHalf*"    # OpenEXR
         "libwebp*" "libsharpyuv*"                     # WebP
-        "libjxr*" "libjpegxr*"                        # JXR / JPEG XR
+        "libjxr*" "libjpegxr*"                        # JXR
         "libopenjp2*"                                 # JPEG 2000
-        "libraw*" "libpng16*" "libtiff*"              # Formati Raw, PNG, Tiff
-        "libjpeg*"                                    # <--- AGGIUNTO: Risolve l'errore libjpeg.so.8
-        "libdeflate*" "libjbig*" "liblzma*"           # Compressione (dipendenze di Tiff/EXR)
-        "libzstd*" "libgomp*" "liblcms2*"             # Compressione e Color Management
-        "libbrotli*"                                  # Spesso richiesta da nuove versioni
+        "libraw*" "libpng16*" "libtiff*"              # Raw, PNG, Tiff
+        "libjpeg*"                                    # JPEG standard
+        "libdeflate*" "libjbig*" "liblzma*"           # Compressioni
+        "libzstd*" "libgomp*" "liblcms2*"             # Utils
+        "libbrotli*"
       )
       
-      # Ciclo su ogni pattern e copio nella cartella libs
+      # Nota l'aggiunta di -L (dereference) nel comando cp
       for pattern in "${DEPENDENCIES[@]}"; do
-        find /usr/lib/x86_64-linux-gnu -name "$pattern" -exec cp -v {} bin/Release/libs/ \;
+        find /usr/lib/x86_64-linux-gnu -name "$pattern" -exec cp -L -v {} bin/Release/libs/ \;
       done
 
-    - echo "Copia Assets..."
+    # Pulizia duplicati (opzionale ma utile se find trova la stessa lib più volte)
+    # Non è strettamente necessario ma tiene la cartella pulita
+
+    # Copia Assets
     - cp tavolo.ovo bin/Release/
     - cp -r texture bin/Release/
 
-    - echo "Generazione script di avvio..."
+    # --- GENERAZIONE SCRIPT DI AVVIO INTELLIGENTE ---
+    - echo "Generazione run.sh..."
     - echo '#!/bin/bash' > bin/Release/run.sh
-    # Dice a Linux: "Cerca le librerie PRIMA in ./libs, poi nel sistema"
-    - echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libs:.' >> bin/Release/run.sh
-    - echo './client' >> bin/Release/run.sh
+    
+    # 1. Trova la cartella dove risiede questo script (indipendentemente da dove lo lanci)
+    - echo 'DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"' >> bin/Release/run.sh
+    
+    # 2. Imposta LD_LIBRARY_PATH usando il percorso assoluto calcolato ($DIR)
+    - echo 'export LD_LIBRARY_PATH="$DIR/libs:$DIR:$LD_LIBRARY_PATH"' >> bin/Release/run.sh
+    
+    # 3. Lancia il client
+    - echo '"$DIR/client"' >> bin/Release/run.sh
+    
     - chmod +x bin/Release/run.sh
     
-    - echo "Packaging completato."
-    - ls -R bin/Release/
+    # DEBUG: Mostra esattamente cosa abbiamo copiato per essere sicuri
+    - echo "Contenuto finale cartella libs:"
+    - ls -lh bin/Release/libs/
 
   after_script:
     - cd ..
