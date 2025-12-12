@@ -3,7 +3,6 @@ stages:
   - engine
   - client
 
-# Usa l'immagine ufficiale del corso che ha già i compilatori e le librerie (FreeImage, GL, ecc.)
 image: gitlab-edu.supsi.ch:5050/dti-isin/labingsw/common:ubuntu2404-cg
 
 structure:
@@ -20,41 +19,43 @@ engine:
     - cd engine
   script:
     - make clean
-    - make release     # Compila la libreria
-#    - make test       # Esegue i test unitari
+    - make engine
+    # Verifica che la libreria sia stata creata
+    - ls -l bin/Release/libengine.so
   after_script:
     - cd ..
   artifacts:
-    expire_in: 1 week
+    name: "engine-lib"
     paths:
+      # È fondamentale che questo percorso sia ESATTO (relativo alla root del progetto)
       - engine/bin/Release/libengine.so
+    expire_in: 1 week
   rules:
     - if: $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
 
 client:
   stage: client
+  # Questa sezione è CRUCIALE: dice al runner di scaricare gli artefatti di 'engine'
   dependencies:
-    - engine # Scarica libengine.so generato nello stadio precedente
+    - engine
   before_script:
     - cd client
   script:
+    # DEBUG: Controlliamo se la libreria è arrivata
+    - echo "Controllo presenza libengine.so..."
+    - ls -l ../engine/bin/Release/
+    
     - make clean
-    - make release     # Compila l'eseguibile client
+    - make release
     
-    # --- Gestione Asset (Mantenuta dal tuo script originale) ---
-    - echo "Copying assets to Release folder..."
-    # Copia il file tavolo.ovo (assumo sia nella root di client/)
+    # Copia asset e libreria per l'artefatto finale
     - cp tavolo.ovo bin/Release/
-    # Copia la cartella texture
     - cp -r texture bin/Release/
-    
-    # Copia libengine.so vicino all'eseguibile per facilitare l'esecuzione locale se scarichi l'artefatto
     - cp ../engine/bin/Release/libengine.so bin/Release/
-    
   after_script:
     - cd ..
   artifacts:
-    name: "$CI_JOB_NAME-artifacts"
-    expire_in: 1 week
     paths:
-      - client/bin/Release/ # Contiene l'eseguibile, la libengine e gli asset
+      - client/bin/Release/
+  rules:
+    - if: $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
