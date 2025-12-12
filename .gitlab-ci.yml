@@ -19,6 +19,7 @@ engine:
   script:
     - make clean
     - make release
+#   - make test
     # Verifica che la libreria sia stata creata
     - ls -l bin/Release/libengine.so
   after_script:
@@ -33,23 +34,35 @@ engine:
 
 client:
   stage: client
-  # Questa sezione è CRUCIALE: dice al runner di scaricare gli artefatti di 'engine'
-  dependencies:
-    - engine
+  needs: 
+    - job: engine
+      artifacts: true
   before_script:
     - cd client
   script:
-    # DEBUG: Controlliamo se la libreria è arrivata
-    - echo "Controllo presenza libengine.so..."
-    - ls -l ../engine/bin/Release/
-    
     - make clean
     - make release
     
-    # Copia asset e libreria per l'artefatto finale
+    # --- PACKAGING ROBUSTO ---
+    
+    # 1. Copia asset e engine (come facevi già)
     - cp tavolo.ovo bin/Release/
     - cp -r texture bin/Release/
     - cp ../engine/bin/Release/libengine.so bin/Release/
+    
+    # 2. COPIA LE LIBRERIE DI SISTEMA (GLUT e FreeImage)
+    # Questo risolve l'errore "cannot open shared object file"
+    # Cerchiamo le librerie nel percorso standard di Ubuntu
+    - cp /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/
+    - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/
+    
+    # 3. Genera uno script di avvio "universale"
+    # Questo serve a dire a Linux: "Prima di cercare nel sistema, guarda in QUESTA cartella"
+    - echo '#!/bin/bash' > bin/Release/run.sh
+    - echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.' >> bin/Release/run.sh
+    - echo './client' >> bin/Release/run.sh
+    - chmod +x bin/Release/run.sh
+
   after_script:
     - cd ..
   artifacts:
