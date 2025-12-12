@@ -40,66 +40,58 @@ client:
   before_script:
     - cd client
   script:
-    - make clean
-    - make release
-    
-    # --- PACKAGING ROBUSTO ---
-    
-    # 1. Copia asset e engine (come facevi già)
-    - cp tavolo.ovo bin/Release/
-    - cp -r texture bin/Release/
-    - cp ../engine/bin/Release/libengine.so bin/Release/
-    
-    - echo "Build complete."
-    
-    # Blocco unico per il packaging delle dipendenze
-    - |
-      mkdir -p libs
-      
-      echo "--- 1. Copia librerie principali ---"
-      cp bin/Release/libengine.so libs/
-      cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
-      cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
+  - make clean
+  - make release
 
-      echo "--- 2. Copia TUTTA la suite OpenEXR (IlmThread, Imath, ecc.) ---"
-      # Questo asterisco è fondamentale: prende IlmThread, IlmImf, ecc.
-      find /usr/lib -name "libIlm*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libImath*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libIex*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libHalf*.so*" -exec cp {} libs/ \;
-      
-      echo "--- 3. Copia dipendenze WebP e JXR ---"
-      find /usr/lib -name "libwebp*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libsharpyuv*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libjxr*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libjpegxr*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libopenjp2.so*" -exec cp {} libs/ \;
-      
-      echo "--- 4. Copia dipendenze generiche (Raw, Tiff, Compressioni) ---"
-      find /usr/lib -name "libraw.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libpng16.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libtiff.so*" -exec cp {} libs/ \;
-      # Queste servono spesso a Tiff e OpenEXR
-      find /usr/lib -name "libdeflate.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libjbig.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "liblzma.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libzstd.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libgomp.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "liblcms2.so*" -exec cp {} libs/ \;
-
-      echo "Copying assets..."
+  # --- PACKAGING DELLE DIPENDENZE ---
+  - echo "Inizio procedura di bundling..."
   
+  # 1. Crea la cartella libs DENTRO la release (così finisce nell'artefatto)
+  - mkdir -p bin/Release/libs
+  
+  # 2. Copia l'Engine (preso dallo stadio precedente)
+  - echo "Copia Engine..."
+  - cp ../engine/bin/Release/libengine.so bin/Release/libs/
 
-      echo "Packaging completato."
-      ls -l libs/
+  # 3. Copia dipendenze dirette (GLUT e FreeImage)
+  - echo "Copia GLUT e FreeImage..."
+  - cp /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/libs/
+  - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/libs/
 
+  # 4. Copia massiva delle dipendenze annidate (OpenEXR, WebP, Raw, ecc.)
+  #    Usiamo un ciclo per non impazzire con copia-incolla
+  - echo "Copia dipendenze annidate (OpenEXR, formati immagine, ecc)..."
+  - |
+    DEPENDENCIES=(
+      "libIlm*" "libImath*" "libIex*" "libHalf*"    # Suite OpenEXR
+      "libwebp*" "libsharpyuv*"                     # WebP
+      "libjxr*" "libjpegxr*"                        # JXR / JPEG XR
+      "libopenjp2*"                                 # JPEG 2000
+      "libraw*" "libpng16*" "libtiff*"              # Formati Raw, PNG, Tiff
+      "libdeflate*" "libjbig*" "liblzma*"           # Compressione (dipendenze di Tiff/EXR)
+      "libzstd*" "libgomp*" "liblcms2*"             # Compressione e Color Management
+      "libbrotli*"                                  # Spesso richiesta da nuove versioni di FreeImage
+    )
     
-    # 3. Genera uno script di avvio "universale"
-    # Questo serve a dire a Linux: "Prima di cercare nel sistema, guarda in QUESTA cartella"
-    - echo '#!/bin/bash' > bin/Release/run.sh
-    - echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:.' >> bin/Release/run.sh
-    - echo './client' >> bin/Release/run.sh
-    - chmod +x bin/Release/run.sh
+    # Ciclo su ogni pattern e copio nella cartella libs
+    for pattern in "${DEPENDENCIES[@]}"; do
+      find /usr/lib/x86_64-linux-gnu -name "$pattern" -exec cp -v {} bin/Release/libs/ \;
+    done
+
+  # 5. Copia Assets
+  - echo "Copia Assets..."
+  - cp tavolo.ovo bin/Release/
+  - cp -r texture bin/Release/
+
+  # 6. Genera lo script di avvio (FONDAMENTALE per far leggere la cartella libs)
+  - echo '#!/bin/bash' > bin/Release/run.sh
+  # Dice a Linux: "Cerca le librerie PRIMA in ./libs, poi nel sistema"
+  - echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libs:.' >> bin/Release/run.sh
+  - echo './client' >> bin/Release/run.sh
+  - chmod +x bin/Release/run.sh
+  
+  - echo "Packaging completato."
+  - ls -R bin/Release/
 
   after_script:
     - cd ..
