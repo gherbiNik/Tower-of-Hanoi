@@ -10,8 +10,7 @@ structure:
   script:
     - '[ -d engine ] || exit 1'
     - '[ -d client ] || exit 1'
-  rules:
-    - if: $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
+
 
 engine:
   stage: engine
@@ -30,8 +29,7 @@ engine:
       # È fondamentale che questo percorso sia ESATTO (relativo alla root del progetto)
       - engine/bin/Release/libengine.so
     expire_in: 1 week
-  rules:
-    - if: $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
+
 
 client:
   stage: client
