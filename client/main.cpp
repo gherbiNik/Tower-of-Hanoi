@@ -230,20 +230,16 @@ void keyboardCallback(unsigned char key, int x, int y) {
             
            
 
-<<<<<<< HEAD
-            // RESET LOGICA GIOCO
-            initHanoiState(root); // Ricostruisce lo stato dei dischi
-            isWon = false;
-            
-=======
             // RESET SCENA
             if (hanoiGame) {
-                delete hanoiGame;
+               delete hanoiGame;
             }
             // Ricrea la scena
-           hanoiGame = new Hanoi(camera, engine);
+            hanoiGame = new Hanoi(camera, engine);
             hanoiGame->initHanoiState(root);
->>>>>>> 950e3897b82fe80d8db2481bdfed26bdde40553a
+
+         
+
         }
         else {
             std::cerr << "[ERROR] Impossibile ricaricare il file .ovo!" << std::endl;
@@ -329,7 +325,7 @@ int main(int argc, char* argv[]) {
         root = tavoloNode;
         root->addChild(camera);
 
-<<<<<<< HEAD
+
       // Opzionale: scala o sposta il tavolo se � troppo grande/piccolo
       // tavoloNode->scale(glm::vec3(0.1f)); 
       root = tavoloNode;
@@ -344,27 +340,23 @@ int main(int argc, char* argv[]) {
       //root->addChild(light);
       root->addChild(camera);
       printSceneGraphWithPosition(root);
-      initHanoiState(root);
+      // === INIZIALIZZAZIONE SCENA E LOGICA HANOI ===
+        // Passiamo Camera e Engine al costruttore
+      hanoiGame = new Hanoi(camera, engine);
+      // Dalla root percorre il grafo
+      hanoiGame->initHanoiState(root);
+
+      std::cout << "\n--- STRUTTURA SCENA ---" << std::endl;
+      printSceneGraphWithPosition(root);
+      std::cout << "-----------------------\n" << std::endl;
       
    }
    else {
       std::cerr << "Errore critico: impossibile caricare tavolo.ovo" << std::endl;
    }
-=======
-        // === INIZIALIZZAZIONE SCENA E LOGICA HANOI ===
-        // Passiamo Camera e Engine al costruttore
-        hanoiGame = new Hanoi(camera, engine);
-        // Dalla root percorre il grafo
-        hanoiGame->initHanoiState(root);
 
-        std::cout << "\n--- STRUTTURA SCENA ---" << std::endl;
-        printSceneGraphWithPosition(root);
-        std::cout << "-----------------------\n" << std::endl;
-    }
-    else {
-        std::cerr << "Errore critico: impossibile caricare tavolo.ovo" << std::endl;
-    }
->>>>>>> 950e3897b82fe80d8db2481bdfed26bdde40553a
+
+
 
     engine->update();
     engine->free();
