@@ -40,58 +40,53 @@ client:
   before_script:
     - cd client
   script:
-  - make clean
-  - make release
+    - make clean
+    - make release
 
-  # --- PACKAGING DELLE DIPENDENZE ---
-  - echo "Inizio procedura di bundling..."
-  
-  # 1. Crea la cartella libs DENTRO la release (così finisce nell'artefatto)
-  - mkdir -p bin/Release/libs
-  
-  # 2. Copia l'Engine (preso dallo stadio precedente)
-  - echo "Copia Engine..."
-  - cp ../engine/bin/Release/libengine.so bin/Release/libs/
-
-  # 3. Copia dipendenze dirette (GLUT e FreeImage)
-  - echo "Copia GLUT e FreeImage..."
-  - cp /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/libs/
-  - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/libs/
-
-  # 4. Copia massiva delle dipendenze annidate (OpenEXR, WebP, Raw, ecc.)
-  #    Usiamo un ciclo per non impazzire con copia-incolla
-  - echo "Copia dipendenze annidate (OpenEXR, formati immagine, ecc)..."
-  - |
-    DEPENDENCIES=(
-      "libIlm*" "libImath*" "libIex*" "libHalf*"    # Suite OpenEXR
-      "libwebp*" "libsharpyuv*"                     # WebP
-      "libjxr*" "libjpegxr*"                        # JXR / JPEG XR
-      "libopenjp2*"                                 # JPEG 2000
-      "libraw*" "libpng16*" "libtiff*"              # Formati Raw, PNG, Tiff
-      "libdeflate*" "libjbig*" "liblzma*"           # Compressione (dipendenze di Tiff/EXR)
-      "libzstd*" "libgomp*" "liblcms2*"             # Compressione e Color Management
-      "libbrotli*"                                  # Spesso richiesta da nuove versioni di FreeImage
-    )
+    # --- PACKAGING DELLE DIPENDENZE ---
+    - echo "Inizio procedura di bundling..."
     
-    # Ciclo su ogni pattern e copio nella cartella libs
-    for pattern in "${DEPENDENCIES[@]}"; do
-      find /usr/lib/x86_64-linux-gnu -name "$pattern" -exec cp -v {} bin/Release/libs/ \;
-    done
+    - mkdir -p bin/Release/libs
+    
+    - echo "Copia Engine..."
+    - cp ../engine/bin/Release/libengine.so bin/Release/libs/
 
-  # 5. Copia Assets
-  - echo "Copia Assets..."
-  - cp tavolo.ovo bin/Release/
-  - cp -r texture bin/Release/
+    - echo "Copia GLUT e FreeImage..."
+    - cp /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/libs/
+    - cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/libs/
 
-  # 6. Genera lo script di avvio (FONDAMENTALE per far leggere la cartella libs)
-  - echo '#!/bin/bash' > bin/Release/run.sh
-  # Dice a Linux: "Cerca le librerie PRIMA in ./libs, poi nel sistema"
-  - echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libs:.' >> bin/Release/run.sh
-  - echo './client' >> bin/Release/run.sh
-  - chmod +x bin/Release/run.sh
-  
-  - echo "Packaging completato."
-  - ls -R bin/Release/
+    - echo "Copia dipendenze annidate (incluse JPEG mancanti)..."
+    - |
+      DEPENDENCIES=(
+        "libIlm*" "libImath*" "libIex*" "libHalf*"    # Suite OpenEXR
+        "libwebp*" "libsharpyuv*"                     # WebP
+        "libjxr*" "libjpegxr*"                        # JXR / JPEG XR
+        "libopenjp2*"                                 # JPEG 2000
+        "libraw*" "libpng16*" "libtiff*"              # Formati Raw, PNG, Tiff
+        "libjpeg*"                                    # <--- AGGIUNTO: Risolve l'errore libjpeg.so.8
+        "libdeflate*" "libjbig*" "liblzma*"           # Compressione (dipendenze di Tiff/EXR)
+        "libzstd*" "libgomp*" "liblcms2*"             # Compressione e Color Management
+        "libbrotli*"                                  # Spesso richiesta da nuove versioni
+      )
+      
+      # Ciclo su ogni pattern e copio nella cartella libs
+      for pattern in "${DEPENDENCIES[@]}"; do
+        find /usr/lib/x86_64-linux-gnu -name "$pattern" -exec cp -v {} bin/Release/libs/ \;
+      done
+
+    - echo "Copia Assets..."
+    - cp tavolo.ovo bin/Release/
+    - cp -r texture bin/Release/
+
+    - echo "Generazione script di avvio..."
+    - echo '#!/bin/bash' > bin/Release/run.sh
+    # Dice a Linux: "Cerca le librerie PRIMA in ./libs, poi nel sistema"
+    - echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:./libs:.' >> bin/Release/run.sh
+    - echo './client' >> bin/Release/run.sh
+    - chmod +x bin/Release/run.sh
+    
+    - echo "Packaging completato."
+    - ls -R bin/Release/
 
   after_script:
     - cd ..
