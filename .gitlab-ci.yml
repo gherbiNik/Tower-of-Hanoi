@@ -20,7 +20,7 @@ engine:
     - cd engine
   script:
     - make clean
-    - make engine     # Compila la libreria
+    - make release     # Compila la libreria
 #    - make test       # Esegue i test unitari
   after_script:
     - cd ..
@@ -39,7 +39,7 @@ client:
     - cd client
   script:
     - make clean
-    - make client     # Compila l'eseguibile client
+    - make release     # Compila l'eseguibile client
     
     # --- Gestione Asset (Mantenuta dal tuo script originale) ---
     - echo "Copying assets to Release folder..."
