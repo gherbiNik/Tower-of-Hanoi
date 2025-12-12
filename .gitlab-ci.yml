@@ -43,7 +43,7 @@ client:
     - make clean
     - make release
 
-    # --- PACKAGING ROBUSTO ---
+    # --- PACKAGING ROBUSTO DELLE DIPENDENZE ---
     - echo "Inizio procedura di bundling..."
     - mkdir -p bin/Release/libs
     
@@ -51,14 +51,15 @@ client:
     - cp ../engine/bin/Release/libengine.so bin/Release/libs/
 
     # Copia dipendenze dirette (GLUT e FreeImage)
-    # Usa -L per copiare il FILE REALE, non il collegamento simbolico
+    # Usa -L per copiare il FILE REALE, risolvendo i symlink
     - cp -L /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/libs/
     - cp -L /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/libs/
 
     - echo "Copia dipendenze annidate..."
     - |
       DEPENDENCIES=(
-        "libIlm*" "libImath*" "libIex*" "libHalf*"    # OpenEXR
+        "libOpenEXR*"                                 # <--- NUOVO: FONDAMENTALE per Ubuntu 24.04+
+        "libIlm*" "libImath*" "libIex*" "libHalf*"    # Componenti legacy/ausiliari OpenEXR
         "libwebp*" "libsharpyuv*"                     # WebP
         "libjxr*" "libjpegxr*"                        # JXR
         "libopenjp2*"                                 # JPEG 2000
@@ -66,16 +67,13 @@ client:
         "libjpeg*"                                    # JPEG standard
         "libdeflate*" "libjbig*" "liblzma*"           # Compressioni
         "libzstd*" "libgomp*" "liblcms2*"             # Utils
-        "libbrotli*"
+        "libbrotli*"                                  # Compressione Brotli
       )
       
-      # Nota l'aggiunta di -L (dereference) nel comando cp
+      # Ciclo con find e cp -L (dereference) per prendere i file veri
       for pattern in "${DEPENDENCIES[@]}"; do
         find /usr/lib/x86_64-linux-gnu -name "$pattern" -exec cp -L -v {} bin/Release/libs/ \;
       done
-
-    # Pulizia duplicati (opzionale ma utile se find trova la stessa lib più volte)
-    # Non è strettamente necessario ma tiene la cartella pulita
 
     # Copia Assets
     - cp tavolo.ovo bin/Release/
@@ -88,7 +86,7 @@ client:
     # 1. Trova la cartella dove risiede questo script (indipendentemente da dove lo lanci)
     - echo 'DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"' >> bin/Release/run.sh
     
-    # 2. Imposta LD_LIBRARY_PATH usando il percorso assoluto calcolato ($DIR)
+    # 2. Imposta LD_LIBRARY_PATH aggiungendo la cartella libs locale
     - echo 'export LD_LIBRARY_PATH="$DIR/libs:$DIR:$LD_LIBRARY_PATH"' >> bin/Release/run.sh
     
     # 3. Lancia il client
@@ -96,8 +94,8 @@ client:
     
     - chmod +x bin/Release/run.sh
     
-    # DEBUG: Mostra esattamente cosa abbiamo copiato per essere sicuri
-    - echo "Contenuto finale cartella libs:"
+    # DEBUG: Verifica finale del contenuto
+    - echo "Librerie copiate:"
     - ls -lh bin/Release/libs/
 
   after_script:
