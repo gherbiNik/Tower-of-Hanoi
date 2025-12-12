@@ -57,5 +57,3 @@ client:
   artifacts:
     paths:
       - client/bin/Release/
-  rules:
-    - if: $CI_COMMIT_BRANCH == "dev" || $CI_COMMIT_BRANCH == "main"
