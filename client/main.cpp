@@ -11,7 +11,7 @@
 #include "ovoReader.h"
 
 #include "HanoiTest.h"
-#include "hanoi.h" 
+#include "hanoi.h"
 
 #include <iostream>
 #include <vector>
@@ -76,7 +76,7 @@ void displayCallback() {
     static float angle = 0.0f;
     angle += 0.5f;
 
-    // Aggiorna animazione disco in mano (hover + bobbing) 
+    // Aggiorna animazione disco in mano (hover + bobbing)
     if (hanoiGame) {
         hanoiGame->updateHeldDiscVisual(angle);
     }
@@ -108,7 +108,7 @@ void displayCallback() {
         drawCenteredText("HAI VINTO!", 0.0f, 0.2f, 1.0f, 0.2f); // Verde Lime
         drawCenteredText("Premi [R] per ricominciare", -30.0f, 1.0f, 1.0f, 1.0f); // Bianco
     }
-    
+
     if (reflectionList) {
        reflectionList->clear();
 
@@ -121,7 +121,7 @@ void displayCallback() {
        glm::mat4 reflectMat = getReflectionMatrix(tableHeight);
 
        // 3. Aggiungi gli oggetti da specchiare
-       // Cerchiamo la "Base" e i dischi/pioli. 
+       // Cerchiamo la "Base" e i dischi/pioli.
        // Se sono tutti figli di un nodo comune (es. "Tavolo" o "HanoiRoot"), basta quello.
        // Altrimenti li aggiungiamo uno per uno o tramite ricerca.
 
@@ -151,7 +151,7 @@ void displayCallback() {
        // 4. Passa all'engine
        engine->setReflectionList(reflectionList);
     }
-  
+
     engine->postRedisplay();
 }
 
@@ -227,8 +227,8 @@ void keyboardCallback(unsigned char key, int x, int y) {
         if (tavoloNode) {
             root = tavoloNode;
             root->addChild(camera);
-            
-           
+
+
 
             // RESET SCENA
             if (hanoiGame) {
@@ -238,7 +238,7 @@ void keyboardCallback(unsigned char key, int x, int y) {
             hanoiGame = new Hanoi(camera, engine);
             hanoiGame->initHanoiState(root);
 
-         
+
 
         }
         else {
@@ -248,7 +248,7 @@ void keyboardCallback(unsigned char key, int x, int y) {
         break;
     }
 
-    case 27: 
+    case 27:
         if (hanoiGame) delete hanoiGame;
         exit(0);
         break;
@@ -290,8 +290,8 @@ void printSceneGraphWithPosition(Node* node, int level = 0) {
 int main(int argc, char* argv[]) {
     HanoiTest testSuite;
     testSuite.runAllTests();
-    
-    
+
+
     engine = &Eng::Base::getInstance();
     if (!engine->init(argc, argv)) return -1;
 
@@ -313,7 +313,7 @@ int main(int argc, char* argv[]) {
    camera->translate(glm::vec3(0.0f, 50.0f, 50.0f));
    camera->rotate(-25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
    mainCameraHome = camera->getM(); // salva posizione iniziale della camera mobile
-   
+
    list = new List();
    reflectionList = new List();
    root = new Node("Root");
@@ -327,7 +327,7 @@ int main(int argc, char* argv[]) {
 
 
       // Opzionale: scala o sposta il tavolo se � troppo grande/piccolo
-      // tavoloNode->scale(glm::vec3(0.1f)); 
+      // tavoloNode->scale(glm::vec3(0.1f));
       root = tavoloNode;
       //Node* target = root->findByName("Spot001.Target");
       //root->removeChild(root->findByName("Omni001"));
@@ -335,8 +335,13 @@ int main(int argc, char* argv[]) {
       Node* base_tavolo = root->findByName("base_tavolo");
       Mesh* base_tavolo_mesh = dynamic_cast<Mesh*>(base_tavolo);
       base_tavolo_mesh->getMaterial()->setTransparency(0.5f);
-  
-      
+      root->removeChild(root->findByName("Omni004"));
+      root->removeChild(root->findByName("Omni003"));
+      root->removeChild(root->findByName("Omni002"));
+      root->removeChild(root->findByName("Omni005"));
+      //root->removeChild(root->findByName("Omni001"));
+
+
       //root->addChild(light);
       root->addChild(camera);
       printSceneGraphWithPosition(root);
@@ -349,7 +354,7 @@ int main(int argc, char* argv[]) {
       std::cout << "\n--- STRUTTURA SCENA ---" << std::endl;
       printSceneGraphWithPosition(root);
       std::cout << "-----------------------\n" << std::endl;
-      
+
    }
    else {
       std::cerr << "Errore critico: impossibile caricare tavolo.ovo" << std::endl;
@@ -364,7 +369,7 @@ int main(int argc, char* argv[]) {
     // Cleanup
     if (hanoiGame) delete hanoiGame;
     delete list;
-    
+
     delete camera;
     return 0;
 }
