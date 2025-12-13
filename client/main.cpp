@@ -335,10 +335,10 @@ int main(int argc, char* argv[]) {
         Node* base_tavolo = root->findByName("base_tavolo");
         Mesh* base_tavolo_mesh = dynamic_cast<Mesh*>(base_tavolo);
         base_tavolo_mesh->getMaterial()->setTransparency(0.5f);
-        root->removeChild(root->findByName("Omni004"));
-        root->removeChild(root->findByName("Omni003"));
-        root->removeChild(root->findByName("Omni002"));
-        root->removeChild(root->findByName("Omni005"));
+        //root->removeChild(root->findByName("Omni004"));
+        //root->removeChild(root->findByName("Omni003"));
+        //root->removeChild(root->findByName("Omni002"));
+        //root->removeChild(root->findByName("Omni005"));
         //root->removeChild(root->findByName("Omni001"));
 
 
