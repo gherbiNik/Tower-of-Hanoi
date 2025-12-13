@@ -9,6 +9,7 @@
 #include "material.h"
 #include "omnidirectionalLight.h"
 #include "ovoReader.h"
+#include "perspectiveCamera.h"
 
 #include "HanoiTest.h"
 #include "hanoi.h" 
@@ -263,8 +264,10 @@ void keyboardCallback(unsigned char key, int x, int y) {
 
 void reshapeCallback(int width, int height) {
     if (height == 0) height = 1;
-    float aspect = (float)width / (float)height;
-    camera->setProjectionMatrix(glm::perspective(glm::radians(45.0f), aspect, 1.0f, 5000.0f));
+    PerspectiveCamera* pCam = dynamic_cast<PerspectiveCamera*>(camera);
+    if (pCam) {
+        pCam->setAspectRatio((float)width, (float)height);
+    }
 }
 
 void printSceneGraphWithPosition(Node* node, int level = 0) {
@@ -306,7 +309,7 @@ int main(int argc, char* argv[]) {
     engine->setDisplayCallback(displayCallback);
     engine->setReshapeCallback(reshapeCallback);
 
-   camera = new Camera("MainCam");
+    camera = new PerspectiveCamera("MainCam", 45.0f, 800.0f / 600.0f, 1.0f, 5000.0f);
    // --- SETUP VISTA FRONTALE ---
 
     // Hard-coded
