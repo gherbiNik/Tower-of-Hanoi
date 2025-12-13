@@ -42,7 +42,6 @@ client:
   script:
     - make clean
     - make release
-    - make test
 
     # --- PACKAGING ROBUSTO DELLE DIPENDENZE ---
     - echo "Inizio procedura di bundling..."

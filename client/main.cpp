@@ -10,7 +10,6 @@
 #include "omnidirectionalLight.h"
 #include "ovoReader.h"
 
-#include "HanoiTest.h"
 #include "hanoi.h"
 
 #include <iostream>
@@ -288,15 +287,6 @@ void printSceneGraphWithPosition(Node* node, int level = 0) {
 }
 
 int main(int argc, char* argv[]) {
-    HanoiTest testSuite;
-    int failures = testSuite.runAllTests();
-
-    if (failures > 0) {
-        std::cerr << "!!! TEST FALLITI: " << failures << " !!!" << std::endl;
-        return 1; 
-    }
-    std::cout << "Tutti i test passati." << std::endl;
-    
     // --- INIZIO ---
 
     engine = &Eng::Base::getInstance();

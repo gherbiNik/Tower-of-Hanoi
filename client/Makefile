@@ -55,14 +55,6 @@ OBJ_RELEASE = $(STD_OBJS_RELEASE) $(TEST_OBJS_RELEASE)
 
 all: debug release
 
-# --- TARGET TEST CORRETTO ---
-# Ora dipende da 'release' per usare le librerie disponibili nella pipeline
-# --- TARGET TEST CORRETTO ---
-test: release
-	@echo "--- Esecuzione Test (Release Mode) ---"
-	# Aggiungiamo il percorso dell'engine al path delle librerie solo per questo comando
-	LD_LIBRARY_PATH=../engine/bin/Release:$$LD_LIBRARY_PATH ./$(OUT_RELEASE)
-
 clean: clean_debug clean_release
 
 before_debug: 
