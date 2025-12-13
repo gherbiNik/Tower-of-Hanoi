@@ -26,6 +26,10 @@ struct DiscState {
 };
 
 class Hanoi {
+
+    // Permette alla classe di test di accedere ai membri privati di Hanoi
+    friend class HanoiTest;
+
 public:
     Hanoi(Camera* cam, Eng::Base* eng);
     ~Hanoi() = default;

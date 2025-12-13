@@ -1,24 +1,54 @@
+/**
+ * @file camera.h
+ * @brief Definizione della gerarchia delle camere (Base, Prospettica, Ortografica).
+ */
+
 #pragma once
 
-#include "glm/glm.hpp"
+#include <glm/glm.hpp>
 #include "node.h"
-#include "libConfig.h"
 
-/**
- * @brief Definisce il punto di vista e la proiezione per il rendering.
- */
+ /**
+  * @class Camera
+  * @brief Classe base che rappresenta una telecamera nella scena 3D.
+  * * Estende la classe Node per ereditare le trasformazioni spaziali (posizione, rotazione).
+  * Gestisce la matrice di proiezione e calcola la matrice di vista (View Matrix).
+  */
 class ENG_API Camera : public Node {
 public:
-   Camera(const std::string& name);  // Added parameters
-   ~Camera();
+    /**
+     * @brief Costruttore della camera base.
+     * @param name Il nome del nodo camera all'interno del grafo della scena.
+     */
+    Camera(const std::string& name);
 
-   // Getter
-   const glm::mat4& getProjectionMatrix() const;
-   glm::mat4 getInvCameraMatrix() const;
+    /**
+     * @brief Distruttore virtuale.
+     */
+    virtual ~Camera();
 
-   // Setterç
-   void setProjectionMatrix(const glm::mat4& projectionMatrix);
+    /**
+     * @brief Restituisce la matrice di proiezione corrente.
+     * @return Riferimento costante alla matrice 4x4 di proiezione.
+     */
+    const glm::mat4& getProjectionMatrix() const;
 
-private:
-   glm::mat4 projectionMatrix;
+    /**
+     * @brief Calcola e restituisce la View Matrix (inversa della World Matrix).
+     * * La View Matrix trasforma le coordinate dal World Space al Camera Space.
+     * @return Matrice 4x4 rappresentante la vista.
+     */
+    glm::mat4 getInvCameraMatrix() const;
+
+    /**
+     * @brief Imposta manualmente una matrice di proiezione generica.
+     * @param projectionMatrix La nuova matrice di proiezione.
+     */
+    void setProjectionMatrix(const glm::mat4& projectionMatrix);
+
+protected:
+    /**
+     * @brief Matrice di proiezione interna.
+     */
+    glm::mat4 projectionMatrix;
 };
