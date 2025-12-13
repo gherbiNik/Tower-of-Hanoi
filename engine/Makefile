@@ -3,7 +3,8 @@ AR = ar
 LD = g++
 WINDRES = windres
 
-INC =  -I../dependencies/glm/include/ -I../dependencies/freeimage/include/ 
+# Aggiunto -I. per trovare gli header nella cartella corrente durante la compilazione dei test
+INC =  -I../dependencies/glm/include/ -I../dependencies/freeimage/include/ -I.
 CFLAGS = -Wall -std=c++20 -fPIC -m64 -fexceptions
 RCFLAGS = 
 RESINC = 
@@ -11,6 +12,7 @@ LIBDIR =
 LIB = -lGL -lglut -lfreeimage -lGLU
 LDFLAGS = -m64
 
+# --- DEBUG CONFIG ---
 INC_DEBUG = $(INC)
 CFLAGS_DEBUG = $(CFLAGS) -g -D_DEBUG
 RESINC_DEBUG = $(RESINC)
@@ -22,6 +24,7 @@ OBJDIR_DEBUG = obj/Debug
 DEP_DEBUG = 
 OUT_DEBUG = bin/Debug/libengine.so
 
+# --- RELEASE CONFIG ---
 INC_RELEASE = $(INC)
 CFLAGS_RELEASE = $(CFLAGS) -O2
 RESINC_RELEASE = $(RESINC)
@@ -33,15 +36,23 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/libengine.so
 
+# --- OBJECTS ---
 ENGINE_OBJECTS = camera.o engine.o infiniteLight.o light.o list.o material.o mesh.o node.o object.o omnidirectionalLight.o ovoReader.o spotLight.o texture.o
 
 OBJ_DEBUG = $(addprefix $(OBJDIR_DEBUG)/, $(ENGINE_OBJECTS))
 OBJ_RELEASE = $(addprefix $(OBJDIR_RELEASE)/, $(ENGINE_OBJECTS))
 
+# --- TEST CONFIG ---
+TEST_SRC = engine_test.cpp
+TEST_OBJ = $(OBJDIR_DEBUG)/engine_test.o
+OUT_TEST = bin/Debug/engine_test_runner
+
 all: debug release
 
 clean: clean_debug clean_release
+	rm -f $(OUT_TEST) $(TEST_OBJ)
 
+# --- DEBUG RULES ---
 before_debug: 
 	test -d bin/Debug || mkdir -p bin/Debug
 	test -d $(OBJDIR_DEBUG) || mkdir -p $(OBJDIR_DEBUG)
@@ -61,6 +72,7 @@ clean_debug:
 	rm -rf bin/Debug
 	rm -rf $(OBJDIR_DEBUG)
 
+# --- RELEASE RULES ---
 before_release: 
 	test -d bin/Release || mkdir -p bin/Release
 	test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
@@ -80,4 +92,19 @@ clean_release:
 	rm -rf bin/Release
 	rm -rf $(OBJDIR_RELEASE)
 
-.PHONY: before_debug after_debug clean_debug before_release after_release clean_release
+# --- TEST RULES (Nuova Sezione) ---
+
+# Compila il file engine_test.cpp
+$(TEST_OBJ): $(TEST_SRC)
+	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c $< -o $@
+
+# Linka il test runner: usa gli oggetti dell'engine (OBJ_DEBUG) direttamente
+# per evitare problemi di path con le shared libraries nel CI.
+$(OUT_TEST): before_debug $(OBJ_DEBUG) $(TEST_OBJ)
+	$(LD) -o $(OUT_TEST) $(TEST_OBJ) $(OBJ_DEBUG) $(LIBDIR_DEBUG) $(LDFLAGS_DEBUG) $(LIB_DEBUG)
+
+# Target da chiamare nel GitLab pipeline
+test: $(OUT_TEST)
+	./$(OUT_TEST)
+
+.PHONY: before_debug after_debug clean_debug before_release after_release clean_release test

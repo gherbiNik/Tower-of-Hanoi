@@ -1,77 +1,96 @@
 stages:
-  - build
+  - structure
+  - engine
+  - client
 
-build_project:
-  stage: build
-  image: ubuntu:22.04
-  before_script:
-    - echo "Starting build environment..."
-    - apt-get update -qy
-    - apt-get install -y build-essential 
-    - apt-get install -y libgl1-mesa-dev libglu1-mesa-dev freeglut3-dev freeglut3 libfreeimage-dev libfreeimage3
-    - echo "System dependecy installation complete."
+image: gitlab-edu.supsi.ch:5050/dti-isin/labingsw/common:ubuntu2404-cg
 
+structure:
+  stage: structure
   script:
-    - echo "Building the project..."
-    - make
-    - echo "Build complete."
-    
-    # Blocco unico per il packaging delle dipendenze
-    - |
-      mkdir -p libs
-      
-      echo "--- 1. Copia librerie principali ---"
-      cp engine/bin/Release/libengine.so libs/
-      cp /usr/lib/x86_64-linux-gnu/libglut.so.3 libs/
-      cp /usr/lib/x86_64-linux-gnu/libfreeimage.so.3 libs/
+    - '[ -d engine ] || exit 1'
+    - '[ -d client ] || exit 1'
 
-      echo "--- 2. Copia TUTTA la suite OpenEXR (IlmThread, Imath, ecc.) ---"
-      # Questo asterisco è fondamentale: prende IlmThread, IlmImf, ecc.
-      find /usr/lib -name "libIlm*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libImath*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libIex*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libHalf*.so*" -exec cp {} libs/ \;
-      
-      echo "--- 3. Copia dipendenze WebP e JXR ---"
-      find /usr/lib -name "libwebp*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libsharpyuv*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libjxr*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libjpegxr*.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libopenjp2.so*" -exec cp {} libs/ \;
-      
-      echo "--- 4. Copia dipendenze generiche (Raw, Tiff, Compressioni) ---"
-      find /usr/lib -name "libraw.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libpng16.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libtiff.so*" -exec cp {} libs/ \;
-      # Queste servono spesso a Tiff e OpenEXR
-      find /usr/lib -name "libdeflate.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libjbig.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "liblzma.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libzstd.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "libgomp.so*" -exec cp {} libs/ \;
-      find /usr/lib -name "liblcms2.so*" -exec cp {} libs/ \;
 
-      echo "Copying assets..."
-    
-    # Copia il file tavolo.ovo dentro la cartella dell'eseguibile
-    # (Modifica "tavolo.ovo" se il file si trova in una sottocartella, es: assets/tavolo.ovo)
-    - cp client/tavolo.ovo client/bin/Release/
-    
-    # Copia l'intera cartella texture (usando -r per "ricorsivo")
-    - cp -r client/texture client/bin/Release/
-
-      echo "Asset copy complete."
-    
-
-      echo "Packaging completato."
-      ls -l libs/
-
+engine:
+  stage: engine
+  before_script:
+    - cd engine
+  script:
+    - make clean
+    - make release
+    - make test
+    # Verifica che la libreria sia stata creata
+    - ls -l bin/Release/libengine.so
+  after_script:
+    - cd ..
   artifacts:
-    name: "$CI_JOB_NAME-artifacts"
-    expire_in: 1 week
+    name: "engine-lib"
     paths:
-      - client/bin/Debug/client
-      - client/bin/Release/
-      - engine/bin/Debug/libengine.so
+      # È fondamentale che questo percorso sia ESATTO (relativo alla root del progetto)
       - engine/bin/Release/libengine.so
-      - libs/
+    expire_in: 1 week
+
+
+client:
+  stage: client
+  needs: 
+    - job: engine
+      artifacts: true
+  before_script:
+    - cd client
+  script:
+    - make clean
+    - make release
+
+    # --- PACKAGING ROBUSTO DELLE DIPENDENZE ---
+    - echo "Inizio procedura di bundling..."
+    - mkdir -p bin/Release/libs
+    
+    # Copia Engine
+    - cp ../engine/bin/Release/libengine.so bin/Release/libs/
+
+    # Copia dipendenze dirette (GLUT e FreeImage) con dereference (-L)
+    - cp -L /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/libs/
+    - cp -L /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/libs/
+
+    - echo "Copia dipendenze annidate..."
+    - |
+      DEPENDENCIES=(
+        "libLerc*"                                    # <--- AGGIUNTO: Risolve l'errore libLerc.so.4
+        "libOpenEXR*"                                 # EXR Core
+        "libIlm*" "libImath*" "libIex*" "libHalf*"    # EXR Utils
+        "libwebp*" "libsharpyuv*"                     # WebP
+        "libjxr*" "libjpegxr*"                        # JXR
+        "libopenjp2*"                                 # JPEG 2000
+        "libraw*" "libpng16*" "libtiff*"              # Raw, PNG, Tiff
+        "libjpeg*"                                    # JPEG standard
+        "libdeflate*" "libjbig*" "liblzma*"           # Compressioni varie
+        "libzstd*" "libgomp*" "liblcms2*"             # Utils
+        "libbrotli*"                                  # Brotli
+      )
+      
+      for pattern in "${DEPENDENCIES[@]}"; do
+        find /usr/lib/x86_64-linux-gnu -name "$pattern" -exec cp -L -v {} bin/Release/libs/ \;
+      done
+
+    # Copia Assets
+    - cp tavolo.ovo bin/Release/
+    - cp -r texture bin/Release/
+
+    # --- GENERAZIONE SCRIPT DI AVVIO ---
+    - echo "Generazione run.sh..."
+    - echo '#!/bin/bash' > bin/Release/run.sh
+    - echo 'DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"' >> bin/Release/run.sh
+    - echo 'export LD_LIBRARY_PATH="$DIR/libs:$DIR:$LD_LIBRARY_PATH"' >> bin/Release/run.sh
+    - echo '"$DIR/client"' >> bin/Release/run.sh
+    - chmod +x bin/Release/run.sh
+    
+    - echo "Contenuto libs:"
+    - ls -lh bin/Release/libs/
+
+  after_script:
+    - cd ..
+  artifacts:
+    paths:
+      - client/bin/Release/

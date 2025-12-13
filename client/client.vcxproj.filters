@@ -21,15 +21,9 @@
     <ClCompile Include="hanoi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HanoiTest.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="hanoi.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="HanoiTest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

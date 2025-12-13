@@ -54,10 +54,14 @@
     <ClCompile Include="ovoReader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+<<<<<<< HEAD
     <ClCompile Include="perspectiveCamera.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="orthographicCamera.cpp">
+=======
+    <ClCompile Include="engine_test.cpp">
+>>>>>>> pipeline-changes
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
