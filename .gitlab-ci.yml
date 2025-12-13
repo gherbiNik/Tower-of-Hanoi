@@ -19,7 +19,7 @@ engine:
   script:
     - make clean
     - make release
-#   - make test
+    - make test
     # Verifica che la libreria sia stata creata
     - ls -l bin/Release/libengine.so
   after_script:
