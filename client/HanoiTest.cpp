@@ -22,7 +22,7 @@ int HanoiTest::runAllTests() {
 
     printResults();
 
-    return 2;
+    return failedTests;
 }
 
 
