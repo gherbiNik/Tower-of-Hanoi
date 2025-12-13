@@ -11,6 +11,7 @@ LIBDIR =
 LIB = -lengine
 LDFLAGS = 
 
+# --- DEBUG CONFIGURATION ---
 INC_DEBUG = $(INC)
 CFLAGS_DEBUG = $(CFLAGS) -g -D_DEBUG
 RESINC_DEBUG = $(RESINC)
@@ -22,7 +23,9 @@ OBJDIR_DEBUG = obj/Debug
 DEP_DEBUG = 
 OUT_DEBUG = bin/Debug/client
 
+# --- RELEASE CONFIGURATION ---
 INC_RELEASE = $(INC)
+# NOTA: Manteniamo -D_DEBUG anche in release per permettere l'esecuzione dei test
 CFLAGS_RELEASE = $(CFLAGS) -O2 -D_DEBUG
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
@@ -36,8 +39,7 @@ OUT_RELEASE = bin/Release/client
 # --- AUTO-DISCOVERY ---
 # 1. Trova tutti i file Test (es. HanoiTest.cpp)
 TEST_SRCS = $(wildcard *Test.cpp)
-# 2. Definisce i file sorgente standard (main.cpp, hanoi.cpp, ecc.) escludendo i test
-#    Se hai altri file oltre a main e hanoi, aggiungili qui o usa wildcard se preferisci.
+# 2. File sorgente standard
 STD_SRCS = main.cpp hanoi.cpp
 
 # Genera liste di oggetti
@@ -53,9 +55,10 @@ OBJ_RELEASE = $(STD_OBJS_RELEASE) $(TEST_OBJS_RELEASE)
 
 all: debug release
 
-# --- TARGET TEST ---
-test: debug
-	@echo "--- Esecuzione Test ---"
+# --- TARGET TEST CORRETTO ---
+# Ora dipende da 'release' per usare le librerie disponibili nella pipeline
+test: release
+	@echo "--- Esecuzione Test (Release Mode) ---"
 	./$(OUT_RELEASE)
 
 clean: clean_debug clean_release
@@ -71,8 +74,7 @@ debug: before_debug out_debug after_debug
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
-# --- REGOLE DI COMPILAZIONE DEBUG (GENERICHE) ---
-# Questa regola compila QUALSIASI .cpp in un .o nella cartella Debug
+# Regola generica compilazione Debug
 $(OBJDIR_DEBUG)/%.o: %.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c $< -o $@
 
@@ -92,8 +94,7 @@ release: before_release out_release after_release
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
-# --- REGOLE DI COMPILAZIONE RELEASE (GENERICHE) ---
-# Questa regola compila QUALSIASI .cpp in un .o nella cartella Release
+# Regola generica compilazione Release
 $(OBJDIR_RELEASE)/%.o: %.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c $< -o $@
 
