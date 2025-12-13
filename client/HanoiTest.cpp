@@ -15,11 +15,12 @@ void HanoiTest::runAllTests() {
 
     testPickupAndDrop();
     testInvalidMoves();
-    testWinCondition();
     testBoundaries();
     testStackOrdering();
     testResetState();
-
+    testSelectionWrapAround();
+    testSimpleWin();
+    testDoublePickup();
     printResults();
 }
 
@@ -48,12 +49,12 @@ void HanoiTest::testPickupAndDrop() {
 
     // Simula presa disco
     game->specialCallback(KEY_UP, 0, 0);
-    // assertTrue(game->hasHeldDisc(), "Dovrebbe esserci un disco in mano");
+    assertTrue(game->hasHeldDisc(), "Dovrebbe esserci un disco in mano");
 
     // Simula rilascio su altro piolo
     game->specialCallback(KEY_RIGHT, 0, 0);
     game->specialCallback(KEY_DOWN, 0, 0);
-    // assertTrue(!game->hasHeldDisc(), "Non dovrebbe esserci più disco in mano");
+    assertTrue(!game->hasHeldDisc(), "Non dovrebbe esserci più disco in mano");
 
     std::cout << "[INFO] Test presa/rilascio completato (stato interno)" << std::endl;
 
@@ -72,12 +73,11 @@ void HanoiTest::testInvalidMoves() {
     // Tenta di prendere da piolo vuoto
     game->specialCallback(KEY_RIGHT, 0, 0); // vai su piolo vuoto
     game->specialCallback(KEY_UP, 0, 0);    // tenta di prendere
-    // assertTrue(!game->hasHeldDisc(), "Non dovrebbe poter prendere da piolo vuoto");
+    assertTrue(!game->hasHeldDisc(), "Non dovrebbe poter prendere da piolo vuoto");
 
     // Tenta di posare disco grande su disco piccolo
     game->specialCallback(KEY_LEFT, 0, 0);  // torna al piolo con dischi
     game->specialCallback(KEY_UP, 0, 0);    // prendi disco
-    // Simula situazione invalida...
 
     std::cout << "[INFO] Test mosse invalide completato" << std::endl;
 
@@ -85,21 +85,6 @@ void HanoiTest::testInvalidMoves() {
     delete game;
 }
 
-// Verifica condizione vittoria
-void HanoiTest::testWinCondition() {
-    std::cout << "\n--- Test: Condizione di Vittoria ---" << std::endl;
-
-    Hanoi* game = createMockHanoi();
-    Node* root = createMockScene();
-    game->initHanoiState(root);
-
-    assertTrue(!game->isGameWon(), "Il gioco non dovrebbe essere vinto all'inizio");
-
-    std::cout << "[INFO] Test condizione vittoria completato" << std::endl;
-
-    cleanupMockScene(root);
-    delete game;
-}
 
 // Verifica limiti mappa
 void HanoiTest::testBoundaries() {
@@ -126,12 +111,29 @@ void HanoiTest::testStackOrdering() {
     std::cout << "\n--- Test: Ordinamento Stack ---" << std::endl;
 
     Hanoi* game = createMockHanoi();
-    Node* root = createMockScene();
+    Node* root = new Node("Root");
+
+    // 1 Palo
+    Node* p1 = new Node("Palo1"); root->addChild(p1);
+    root->addChild(new Node("Palo2")); root->addChild(new Node("Palo3"));
+
+    // Creiamo 2 dischi: Disco1 (alto/piccolo) e Disco2 (basso/grande)
+    Node* dA = new Node("Disco1"); dA->translate(glm::vec3(0, 10, 0)); // Y alta
+    Node* dB = new Node("Disco2"); dB->translate(glm::vec3(0, 0, 0));  // Y bassa
+
+    root->addChild(dA);
+    root->addChild(dB);
+
     game->initHanoiState(root);
 
-    // Verifica che i dischi siano ordinati per dimensione crescente
-    // (dal basso verso l'alto)
-    std::cout << "[INFO] Test ordinamento stack completato (logica interna)" << std::endl;
+    // Lo stack 0 deve essere ordinato per altezza: indice 0 = basso, indice 1 = alto
+    if (game->pegStacks[0].size() >= 2) {
+        assertTrue(game->pegStacks[0][0].node->getName() == "Disco2", "Disco2 (basso) deve essere alla base");
+        assertTrue(game->pegStacks[0][1].node->getName() == "Disco1", "Disco1 (alto) deve essere in cima");
+    }
+    else {
+        assertTrue(false, "Errore setup stack ordering");
+    }
 
     cleanupMockScene(root);
     delete game;
@@ -201,6 +203,104 @@ void HanoiTest::cleanupMockScene(Node* root) {
         delete root; 
     }
 }
+
+void HanoiTest::testSelectionWrapAround() {
+    std::cout << "\n--- Test: Selezione Circolare (Wrap-around) ---" << std::endl;
+
+    Hanoi* game = createMockHanoi();
+    // Non serve una scena complessa, basta che selectedPeg sia inizializzato
+    game->selectedPeg = 0;
+
+    // Test Sinistra: 0 -> 2
+    game->specialCallback(KEY_LEFT, 0, 0);
+    assertTrue(game->selectedPeg == 2, "Da peg 0, Sinistra deve portare a peg 2");
+
+    // Test Destra: 2 -> 0
+    game->specialCallback(KEY_RIGHT, 0, 0);
+    assertTrue(game->selectedPeg == 0, "Da peg 2, Destra deve portare a peg 0");
+
+    // Test Destra: 0 -> 1 -> 2
+    game->specialCallback(KEY_RIGHT, 0, 0);
+    assertTrue(game->selectedPeg == 1, "Da peg 0, Destra deve portare a peg 1");
+    game->specialCallback(KEY_RIGHT, 0, 0);
+    assertTrue(game->selectedPeg == 2, "Da peg 1, Destra deve portare a peg 2");
+
+    delete game;
+}
+
+void HanoiTest::testSimpleWin() {
+    std::cout << "\n--- Test: Scenario Vittoria (1 Disco) ---" << std::endl;
+
+    Hanoi* game = createMockHanoi();
+    Node* root = new Node("Root");
+
+    // Configurazione Scena Mock:
+    // Creiamo i 3 pali standard distanziati sull'asse X.
+    Node* p1 = new Node("Palo1"); p1->translate(glm::vec3(-10, 0, 0));
+    Node* p2 = new Node("Palo2"); p2->translate(glm::vec3(0, 0, 0));
+    Node* p3 = new Node("Palo3"); p3->translate(glm::vec3(10, 0, 0));
+    root->addChild(p1); root->addChild(p2); root->addChild(p3);
+
+    // Verifica di sicurezza: il gioco non deve mai iniziare in stato "Vinto"
+    assertTrue(!game->isGameWon(), "Il gioco non dovrebbe essere vinto all'inizio");
+
+    // Posizionamento disco:
+    // Creiamo un solo disco ("Disco1") e lo mettiamo sul Palo 2 (indice 1).
+    // In questo modo basta una sola mossa per vincere.
+    Node* d1 = new Node("Disco1");
+    d1->translate(glm::vec3(0, 0, 0));
+    root->addChild(d1);
+
+    // Inizializza la logica interna: il motore scansiona la posizione geometrica dei nodi
+    game->initHanoiState(root);
+
+    // Controlliamo che il disco sia sullo stack centrale
+    assertTrue(game->pegStacks[1].size() == 1, "Il disco deve essere rilevato sul Palo 2");
+    assertTrue(game->pegStacks[0].empty(), "Il Palo 1 (target) deve essere inizialmente vuoto");
+
+
+    // Forziamo la selezione sul piolo sorgente
+    game->selectedPeg = 1;
+
+    // Simuliamo l'input di presa (Freccia SU) e verifichiamo che il disco sia "in mano"
+    game->specialCallback(KEY_UP, 0, 0);
+    assertTrue(game->hasHeldDisc(), "Il disco deve essere stato prelevato con successo");
+
+    // Spostiamo la selezione verso il piolo di destinazione (Palo 1 / Indice 0)
+    game->specialCallback(KEY_LEFT, 0, 0);
+    assertTrue(game->selectedPeg == 0, "La selezione deve essersi spostata sul Palo 1");
+
+    game->specialCallback(KEY_DOWN, 0, 0);
+
+    // --- VERIFICA FINALE ---
+    assertTrue(game->isGameWon(), "Il gioco deve risultare vinto spostando l'unico disco sul target");
+
+    cleanupMockScene(root);
+    delete game;
+}
+
+void HanoiTest::testDoublePickup() {
+    std::cout << "\n--- Test: Robustezza Doppia Presa ---" << std::endl;
+
+    Hanoi* game = createMockHanoi();
+    Node* root = createMockScene();
+    game->initHanoiState(root);
+
+    size_t initialSize = game->pegStacks[0].size();
+
+    // Prima Presa (Valida)
+    game->specialCallback(KEY_UP, 0, 0);
+    assertTrue(game->pegStacks[0].size() == initialSize - 1, "Stack decrementato");
+
+    // Seconda Presa (Invalida - ho già un disco)
+    game->specialCallback(KEY_UP, 0, 0);
+    assertTrue(game->hasHeldDisc(), "Disco ancora in mano");
+    assertTrue(game->pegStacks[0].size() == initialSize - 1, "Stack NON decrementato la seconda volta");
+
+    cleanupMockScene(root);
+    delete game;
+}
+
 
 void HanoiTest::printResults() {
     std::cout << "\n========================================" << std::endl;

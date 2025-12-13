@@ -25,7 +25,6 @@ private:
 
     void testPickupAndDrop();
     void testInvalidMoves();
-    void testWinCondition();
     void testBoundaries();
     void testStackOrdering();
     void testResetState();
@@ -37,6 +36,11 @@ private:
 
     int testParseDiscSize(const std::string& name);
     int testUpdateSelectedPeg(int currentPeg, int delta);
+    void testDoublePickup();
+        
+    void testSelectionWrapAround(); // Test selezione circolare (0 -> sx -> 2)
+    void testSimpleWin();           // Test vittoria con scenario semplificato
+    
 
     // Stampa risultati
     void printResults();
