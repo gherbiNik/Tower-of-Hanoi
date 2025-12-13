@@ -50,27 +50,26 @@ client:
     # Copia Engine
     - cp ../engine/bin/Release/libengine.so bin/Release/libs/
 
-    # Copia dipendenze dirette (GLUT e FreeImage)
-    # Usa -L per copiare il FILE REALE, risolvendo i symlink
+    # Copia dipendenze dirette (GLUT e FreeImage) con dereference (-L)
     - cp -L /usr/lib/x86_64-linux-gnu/libglut.so.3* bin/Release/libs/
     - cp -L /usr/lib/x86_64-linux-gnu/libfreeimage.so.3* bin/Release/libs/
 
     - echo "Copia dipendenze annidate..."
     - |
       DEPENDENCIES=(
-        "libOpenEXR*"                                 # <--- NUOVO: FONDAMENTALE per Ubuntu 24.04+
-        "libIlm*" "libImath*" "libIex*" "libHalf*"    # Componenti legacy/ausiliari OpenEXR
+        "libLerc*"                                    # <--- AGGIUNTO: Risolve l'errore libLerc.so.4
+        "libOpenEXR*"                                 # EXR Core
+        "libIlm*" "libImath*" "libIex*" "libHalf*"    # EXR Utils
         "libwebp*" "libsharpyuv*"                     # WebP
         "libjxr*" "libjpegxr*"                        # JXR
         "libopenjp2*"                                 # JPEG 2000
         "libraw*" "libpng16*" "libtiff*"              # Raw, PNG, Tiff
         "libjpeg*"                                    # JPEG standard
-        "libdeflate*" "libjbig*" "liblzma*"           # Compressioni
+        "libdeflate*" "libjbig*" "liblzma*"           # Compressioni varie
         "libzstd*" "libgomp*" "liblcms2*"             # Utils
-        "libbrotli*"                                  # Compressione Brotli
+        "libbrotli*"                                  # Brotli
       )
       
-      # Ciclo con find e cp -L (dereference) per prendere i file veri
       for pattern in "${DEPENDENCIES[@]}"; do
         find /usr/lib/x86_64-linux-gnu -name "$pattern" -exec cp -L -v {} bin/Release/libs/ \;
       done
@@ -79,23 +78,15 @@ client:
     - cp tavolo.ovo bin/Release/
     - cp -r texture bin/Release/
 
-    # --- GENERAZIONE SCRIPT DI AVVIO INTELLIGENTE ---
+    # --- GENERAZIONE SCRIPT DI AVVIO ---
     - echo "Generazione run.sh..."
     - echo '#!/bin/bash' > bin/Release/run.sh
-    
-    # 1. Trova la cartella dove risiede questo script (indipendentemente da dove lo lanci)
     - echo 'DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"' >> bin/Release/run.sh
-    
-    # 2. Imposta LD_LIBRARY_PATH aggiungendo la cartella libs locale
     - echo 'export LD_LIBRARY_PATH="$DIR/libs:$DIR:$LD_LIBRARY_PATH"' >> bin/Release/run.sh
-    
-    # 3. Lancia il client
     - echo '"$DIR/client"' >> bin/Release/run.sh
-    
     - chmod +x bin/Release/run.sh
     
-    # DEBUG: Verifica finale del contenuto
-    - echo "Librerie copiate:"
+    - echo "Contenuto libs:"
     - ls -lh bin/Release/libs/
 
   after_script:
