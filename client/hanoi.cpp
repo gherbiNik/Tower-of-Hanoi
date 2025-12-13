@@ -15,7 +15,7 @@ void Hanoi::updateSelectedPeg(int delta) {
 }
 
 int Hanoi::parseDiscSize(const std::string& name) {
-    // Disco1 = più grande, Disco7 = più piccolo (rank alto = disco più grande)
+    // Disco1 = piï¿½ grande, Disco7 = piï¿½ piccolo (rank alto = disco piï¿½ grande)
     if (name.rfind("Disco", 0) != 0) return 0;
     int n = std::atoi(name.c_str() + 5);
     if (n <= 0) return 0;
@@ -97,7 +97,9 @@ void Hanoi::initHanoiState(Node* root) {
         pegStacks[i].clear();
     }
     heldDisc.reset();
+    heldDiscSourcePeg = -1;
     isWon = false; // Reset stato vittoria
+    clearUndoRedoStacks(); // Pulisce anche gli stack undo/redo
 
     Node* palo1 = root->findByName("Palo1");
     Node* palo2 = root->findByName("Palo2");
@@ -121,7 +123,7 @@ void Hanoi::initHanoiState(Node* root) {
         discs.push_back(ds);
     }
 
-    // Assegna a peg più vicino (XZ)
+    // Assegna a peg piï¿½ vicino (XZ)
     for (auto& ds : discs) {
         glm::vec3 pos = glm::vec3(ds.node->getWorldFinalMatrix()[3]);
         float best = std::numeric_limits<float>::max();
@@ -148,7 +150,7 @@ void Hanoi::initHanoiState(Node* root) {
             });
     }
 
-    // Calcola base e passo usando il peg più popolato
+    // Calcola base e passo usando il peg piï¿½ popolato
     int pegMax = 0;
     for (int p = 1; p < 3; ++p) {
         if (pegStacks[p].size() > pegStacks[pegMax].size()) pegMax = p;
@@ -185,9 +187,15 @@ void Hanoi::initHanoiState(Node* root) {
 }
 
 void Hanoi::pickupDisc() {
-    if (heldDisc.has_value()) return; // già in mano
+    if (heldDisc.has_value()) return; // giï¿½ in mano
     auto& stack = pegStacks[selectedPeg];
     if (stack.empty()) return;
+    
+    // NON salviamo qui: salviamo solo quando lo spostamento Ã¨ completato (dropDisc)
+    
+    // Traccia da quale piolo Ã¨ stato preso il disco
+    heldDiscSourcePeg = selectedPeg;
+    
     heldDisc = stack.back();
     stack.pop_back();
 }
@@ -196,15 +204,22 @@ void Hanoi::dropDisc() {
     if (!heldDisc.has_value()) return;
 
     auto& stack = pegStacks[selectedPeg];
-    // Vietato posare un disco più grande sopra uno più piccolo
+    // Vietato posare un disco piï¿½ grande sopra uno piï¿½ piccolo
     if (!stack.empty() && heldDisc->sizeRank > stack.back().sizeRank) {
         return;
     }
+    
+    // Salva stato PRIMA dello spostamento (per poter annullare correttamente)
+    // Il disco Ã¨ ancora in mano, ma lo riposizioneremo automaticamente in restoreState()
+    saveState();
+    
+    // Esegui lo spostamento
     int idx = static_cast<int>(stack.size());
     stack.push_back(*heldDisc);
     placeDisc(stack.back(), selectedPeg, idx);
 
     heldDisc.reset();
+    heldDiscSourcePeg = -1; // Reset piolo di origine
 
     if (checkWinCondition()) {
         isWon = true;
@@ -283,4 +298,209 @@ bool Hanoi::checkWinCondition() {
     }
 
     return false;
+}
+
+void Hanoi::saveState() {
+    GameState state;
+    
+    // Copia i 3 stack
+    for (int i = 0; i < 3; i++) {
+        state.pegStacks[i] = pegStacks[i];
+    }
+    
+    // Copia heldDisc se presente
+    state.heldDisc = heldDisc;
+    
+    // Copia altri stati
+    state.isWon = isWon;
+    state.selectedPeg = selectedPeg;
+    state.sourcePeg = heldDiscSourcePeg; // Piolo da cui Ã¨ stato preso il disco
+    
+    // Push su undo stack
+    undoStack.push(state);
+    
+    // LOG: Mostra stato salvato (PRIMA dello spostamento, disco in mano)
+    std::cout << "[UNDO/REDO] Stato salvato (prima dello spostamento) - Stack[" << undoStack.size() << "] | ";
+    std::cout << "Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
+    if (heldDisc.has_value()) {
+        std::cout << " | Disco in mano: rank " << heldDisc->sizeRank << " (verrÃ  riposizionato in restore)";
+    } else {
+        std::cout << " | Nessun disco in mano";
+    }
+    std::cout << std::endl;
+    
+    // Limita la dimensione dello stack
+    if (undoStack.size() > MAX_UNDO_STATES) {
+        // Rimuove il piÃ¹ vecchio (bottom of stack)
+        std::stack<GameState> temp;
+        while (undoStack.size() > MAX_UNDO_STATES) {
+            undoStack.pop();
+        }
+        std::cout << "[UNDO/REDO] Stack limitato a " << MAX_UNDO_STATES << " stati" << std::endl;
+    }
+    
+    // Pulisce redo stack quando si fa una nuova azione
+    if (!redoStack.empty()) {
+        std::cout << "[UNDO/REDO] Redo stack pulito (nuova azione eseguita)" << std::endl;
+    }
+    clearRedoStack();
+}
+
+void Hanoi::clearRedoStack() {
+    while (!redoStack.empty()) {
+        redoStack.pop();
+    }
+}
+
+void Hanoi::clearUndoRedoStacks() {
+    while (!undoStack.empty()) {
+        undoStack.pop();
+    }
+    clearRedoStack();
+}
+
+void Hanoi::restoreState(const GameState& state) {
+    // Ripristina i 3 stack
+    for (int i = 0; i < 3; i++) {
+        pegStacks[i] = state.pegStacks[i];
+        
+        // Riposiziona tutti i dischi nello stack
+        for (int j = 0; j < (int)pegStacks[i].size(); j++) {
+            placeDisc(pegStacks[i][j], i, j);
+        }
+    }
+    
+    // Ripristina heldDisc
+    heldDisc = state.heldDisc;
+    heldDiscSourcePeg = state.sourcePeg;
+    
+    // Se c'Ã¨ un disco in mano (salvato prima dello spostamento), 
+    // riposizionalo sul piolo da cui Ã¨ stato preso
+    // (questo evita di vedere il disco in aria dopo undo/redo)
+    if (heldDisc.has_value() && heldDiscSourcePeg >= 0 && heldDiscSourcePeg < 3) {
+        // Riposiziona il disco sul piolo da cui Ã¨ stato preso
+        int targetPeg = heldDiscSourcePeg; // Salva prima di resettare
+        auto& targetStack = pegStacks[targetPeg];
+        int stackIdx = (int)targetStack.size();
+        targetStack.push_back(*heldDisc);
+        placeDisc(targetStack.back(), targetPeg, stackIdx);
+        heldDisc.reset();
+        heldDiscSourcePeg = -1;
+        
+        std::cout << "[RESTORE] Disco in mano riposizionato sul piolo " << targetPeg << std::endl;
+    } else if (heldDisc.has_value()) {
+        // Fallback: se sourcePeg non Ã¨ valido, usa il piolo selezionato
+        auto& targetStack = pegStacks[state.selectedPeg];
+        int stackIdx = (int)targetStack.size();
+        targetStack.push_back(*heldDisc);
+        placeDisc(targetStack.back(), state.selectedPeg, stackIdx);
+        heldDisc.reset();
+        heldDiscSourcePeg = -1;
+        
+        std::cout << "[RESTORE] Disco in mano riposizionato sul piolo selezionato " << state.selectedPeg << std::endl;
+    }
+    
+    // Ripristina altri stati
+    isWon = state.isWon;
+    selectedPeg = state.selectedPeg;
+    
+    // Aggiorna visualizzazione selezione
+    updateSelectionVisuals();
+}
+
+void Hanoi::undo() {
+    if (undoStack.empty()) {
+        std::cout << "[UNDO] Nessuno stato da annullare (stack vuoto)" << std::endl;
+        return; // Niente da fare
+    }
+    
+    // LOG: Stato corrente prima di undo
+    std::cout << "[UNDO] PRIMA - Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
+    if (heldDisc.has_value()) {
+        std::cout << " | Disco in mano: rank " << heldDisc->sizeRank;
+    } else {
+        std::cout << " | Nessun disco in mano";
+    }
+    std::cout << " | UndoStack[" << undoStack.size() << "] RedoStack[" << redoStack.size() << "]" << std::endl;
+    
+    // Salva stato corrente in redo stack
+    GameState currentState;
+    for (int i = 0; i < 3; i++) {
+        currentState.pegStacks[i] = pegStacks[i];
+    }
+    currentState.heldDisc = heldDisc;
+    currentState.isWon = isWon;
+    currentState.selectedPeg = selectedPeg;
+    currentState.sourcePeg = heldDiscSourcePeg;
+    redoStack.push(currentState);
+    
+    // Limita la dimensione del redo stack
+    if (redoStack.size() > MAX_UNDO_STATES) {
+        std::stack<GameState> temp;
+        while (redoStack.size() > MAX_UNDO_STATES) {
+            redoStack.pop();
+        }
+    }
+    
+    // Ripristina stato precedente
+    GameState previousState = undoStack.top();
+    undoStack.pop();
+    restoreState(previousState);
+    
+    // LOG: Stato dopo undo
+    std::cout << "[UNDO] DOPO  - Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
+    if (heldDisc.has_value()) {
+        std::cout << " | Disco in mano: rank " << heldDisc->sizeRank;
+    } else {
+        std::cout << " | Nessun disco in mano";
+    }
+    std::cout << " | UndoStack[" << undoStack.size() << "] RedoStack[" << redoStack.size() << "]" << std::endl;
+}
+
+void Hanoi::redo() {
+    if (redoStack.empty()) {
+        std::cout << "[REDO] Nessuno stato da ripristinare (stack vuoto)" << std::endl;
+        return; // Niente da fare
+    }
+    
+    // LOG: Stato corrente prima di redo
+    std::cout << "[REDO] PRIMA - Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
+    if (heldDisc.has_value()) {
+        std::cout << " | Disco in mano: rank " << heldDisc->sizeRank;
+    } else {
+        std::cout << " | Nessun disco in mano";
+    }
+    std::cout << " | UndoStack[" << undoStack.size() << "] RedoStack[" << redoStack.size() << "]" << std::endl;
+    
+    // Salva stato corrente in undo stack
+    GameState currentState;
+    for (int i = 0; i < 3; i++) {
+        currentState.pegStacks[i] = pegStacks[i];
+    }
+    currentState.heldDisc = heldDisc;
+    currentState.isWon = isWon;
+    currentState.selectedPeg = selectedPeg;
+    currentState.sourcePeg = heldDiscSourcePeg;
+    undoStack.push(currentState);
+    
+    // Limita la dimensione dell'undo stack
+    if (undoStack.size() > MAX_UNDO_STATES) {
+        while (undoStack.size() > MAX_UNDO_STATES) {
+            undoStack.pop();
+        }
+    }
+    
+    // Ripristina stato successivo
+    GameState nextState = redoStack.top();
+    redoStack.pop();
+    restoreState(nextState);
+    
+    // LOG: Stato dopo redo
+    std::cout << "[REDO] DOPO  - Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
+    if (heldDisc.has_value()) {
+        std::cout << " | Disco in mano: rank " << heldDisc->sizeRank;
+    } else {
+        std::cout << " | Nessun disco in mano";
+    }
+    std::cout << " | UndoStack[" << undoStack.size() << "] RedoStack[" << redoStack.size() << "]" << std::endl;
 }

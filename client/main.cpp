@@ -100,7 +100,7 @@ void displayCallback() {
     engine->addToScreenText("Freccia SX/DX: cambia piolo");
     engine->addToScreenText("Freccia SU: prendi disco");
     engine->addToScreenText("Freccia GIU: lascia");
-    engine->addToScreenText("[R] Reset");
+    engine->addToScreenText("[R] Reset | [U] Undo | [Y] Redo");
     engine->addToScreenText("[1-4] Camera Presets");
 
     // ==== VITTORIA ====
@@ -247,6 +247,18 @@ void keyboardCallback(unsigned char key, int x, int y) {
         }
         break;
     }
+
+    // --- UNDO/REDO ---
+    case 'u': case 'U':
+        if (hanoiGame) {
+            hanoiGame->undo();
+        }
+        break;
+    case 'y': case 'Y':
+        if (hanoiGame) {
+            hanoiGame->redo();
+        }
+        break;
 
     case 27:
         if (hanoiGame) delete hanoiGame;

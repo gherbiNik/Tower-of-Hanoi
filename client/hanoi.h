@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <limits>
+#include <stack>
 
 #include "ovoReader.h"
 #include "engine.h"
@@ -23,6 +24,14 @@ struct DiscState {
     Node* node;
     int sizeRank;
     glm::mat4 baseTransform;
+};
+
+struct GameState {
+    std::vector<DiscState> pegStacks[3];
+    std::optional<DiscState> heldDisc;
+    bool isWon;
+    int selectedPeg;
+    int sourcePeg; // Piolo da cui è stato preso il disco (se heldDisc è presente)
 };
 
 class Hanoi {
@@ -47,6 +56,10 @@ public:
     int getSelectedPeg() const { return selectedPeg; }
     bool hasHeldDisc() const { return heldDisc.has_value(); }
 
+    // Undo/Redo
+    void undo();
+    void redo();
+
 private:
     // Dipendenze esterne
     Camera* camera;
@@ -57,6 +70,7 @@ private:
     bool isWon = false;
     std::vector<DiscState> pegStacks[3];
     std::optional<DiscState> heldDisc;
+    int heldDiscSourcePeg = -1; // Piolo da cui è stato preso il disco in mano
 
     // Parametri spaziali
     glm::vec3 pegPositions[3];
@@ -69,6 +83,11 @@ private:
 
     std::vector<glm::vec3> camPresets;
 
+    // Undo/Redo stacks
+    std::stack<GameState> undoStack;
+    std::stack<GameState> redoStack;
+    static constexpr int MAX_UNDO_STATES = 50;
+
     // Metodi di logica interna
     void updateSelectedPeg(int delta);
     int parseDiscSize(const std::string& name);
@@ -78,5 +97,11 @@ private:
     void pickupDisc();
     void dropDisc();
     bool checkWinCondition();
+    
+    // Metodi per undo/redo
+    void saveState();
+    void restoreState(const GameState& state);
+    void clearUndoRedoStacks();
+    void clearRedoStack();
 
 };
