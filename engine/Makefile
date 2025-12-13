@@ -37,7 +37,7 @@ DEP_RELEASE =
 OUT_RELEASE = bin/Release/libengine.so
 
 # --- OBJECTS ---
-ENGINE_OBJECTS = camera.o engine.o infiniteLight.o light.o list.o material.o mesh.o node.o object.o omnidirectionalLight.o ovoReader.o spotLight.o texture.o
+ENGINE_OBJECTS = camera.o orthographicCamera.o perspectiveCamera.o engine.o infiniteLight.o light.o list.o material.o mesh.o node.o object.o omnidirectionalLight.o ovoReader.o spotLight.o texture.o
 
 OBJ_DEBUG = $(addprefix $(OBJDIR_DEBUG)/, $(ENGINE_OBJECTS))
 OBJ_RELEASE = $(addprefix $(OBJDIR_RELEASE)/, $(ENGINE_OBJECTS))
