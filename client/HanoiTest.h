@@ -15,7 +15,7 @@ public:
     ~HanoiTest() = default;
 
     // Metodo principale per eseguire tutti i test
-    void runAllTests();
+    int runAllTests();
 
 private:
     int passedTests;

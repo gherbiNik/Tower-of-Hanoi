@@ -33,24 +33,27 @@ OBJDIR_RELEASE = obj/Release
 DEP_RELEASE = 
 OUT_RELEASE = bin/Release/client
 
-# --- AUTO-DISCOVERY DEI TEST ---
-# Trova tutti i file che finiscono per Test.cpp (es. HanoiTest.cpp)
+# --- AUTO-DISCOVERY ---
+# 1. Trova tutti i file Test (es. HanoiTest.cpp)
 TEST_SRCS = $(wildcard *Test.cpp)
+# 2. Definisce i file sorgente standard (main.cpp, hanoi.cpp, ecc.) escludendo i test
+#    Se hai altri file oltre a main e hanoi, aggiungili qui o usa wildcard se preferisci.
+STD_SRCS = main.cpp hanoi.cpp
 
-# Crea la lista degli oggetti dei test per Debug e Release
+# Genera liste di oggetti
 TEST_OBJS_DEBUG = $(patsubst %.cpp,$(OBJDIR_DEBUG)/%.o,$(TEST_SRCS))
-TEST_OBJS_RELEASE = $(patsubst %.cpp,$(OBJDIR_RELEASE)/%.o,$(TEST_SRCS))
+STD_OBJS_DEBUG = $(patsubst %.cpp,$(OBJDIR_DEBUG)/%.o,$(STD_SRCS))
 
-# Aggiunge gli oggetti dei test alla lista principale
-# Nota: Ho corretto il percorso di OBJ_DEBUG che prima puntava erroneamente a Release
-OBJ_DEBUG = $(OBJDIR_DEBUG)/main.o $(OBJDIR_DEBUG)/hanoi.o $(TEST_OBJS_DEBUG)
-OBJ_RELEASE = $(OBJDIR_RELEASE)/main.o $(OBJDIR_RELEASE)/hanoi.o $(TEST_OBJS_RELEASE)
+TEST_OBJS_RELEASE = $(patsubst %.cpp,$(OBJDIR_RELEASE)/%.o,$(TEST_SRCS))
+STD_OBJS_RELEASE = $(patsubst %.cpp,$(OBJDIR_RELEASE)/%.o,$(STD_SRCS))
+
+# Oggetti finali per il linking
+OBJ_DEBUG = $(STD_OBJS_DEBUG) $(TEST_OBJS_DEBUG)
+OBJ_RELEASE = $(STD_OBJS_RELEASE) $(TEST_OBJS_RELEASE)
 
 all: debug release
 
-# --- NUOVO TARGET TEST ---
-# Esegue la build di debug e poi lancia l'eseguibile.
-# Se l'eseguibile ritorna un errore (exit code != 0), make fallisce.
+# --- TARGET TEST ---
 test: debug
 	@echo "--- Esecuzione Test ---"
 	./$(OUT_DEBUG)
@@ -68,13 +71,9 @@ debug: before_debug out_debug after_debug
 out_debug: before_debug $(OBJ_DEBUG) $(DEP_DEBUG)
 	$(LD) $(LIBDIR_DEBUG) -o $(OUT_DEBUG) $(OBJ_DEBUG)  $(LDFLAGS_DEBUG) $(LIB_DEBUG)
 
-# Regole specifiche esistenti
-$(OBJDIR_DEBUG)/main.o: main.cpp
-	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c main.cpp -o $(OBJDIR_DEBUG)/main.o
-
-# --- REGOLA GENERICA PER I TEST IN DEBUG ---
-# Compila automaticamente qualsiasi file *Test.cpp trovato
-$(OBJDIR_DEBUG)/%Test.o: %Test.cpp
+# --- REGOLE DI COMPILAZIONE DEBUG (GENERICHE) ---
+# Questa regola compila QUALSIASI .cpp in un .o nella cartella Debug
+$(OBJDIR_DEBUG)/%.o: %.cpp
 	$(CXX) $(CFLAGS_DEBUG) $(INC_DEBUG) -c $< -o $@
 
 clean_debug: 
@@ -93,13 +92,9 @@ release: before_release out_release after_release
 out_release: before_release $(OBJ_RELEASE) $(DEP_RELEASE)
 	$(LD) $(LIBDIR_RELEASE) -o $(OUT_RELEASE) $(OBJ_RELEASE)  $(LDFLAGS_RELEASE) $(LIB_RELEASE)
 
-# Regole specifiche esistenti
-$(OBJDIR_RELEASE)/main.o: main.cpp
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c main.cpp -o $(OBJDIR_RELEASE)/main.o
-	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c hanoi.cpp -o $(OBJDIR_RELEASE)/hanoi.o
-
-# --- REGOLA GENERICA PER I TEST IN RELEASE ---
-$(OBJDIR_RELEASE)/%Test.o: %Test.cpp
+# --- REGOLE DI COMPILAZIONE RELEASE (GENERICHE) ---
+# Questa regola compila QUALSIASI .cpp in un .o nella cartella Release
+$(OBJDIR_RELEASE)/%.o: %.cpp
 	$(CXX) $(CFLAGS_RELEASE) $(INC_RELEASE) -c $< -o $@
 
 clean_release: 

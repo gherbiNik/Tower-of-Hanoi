@@ -10,7 +10,7 @@
 
 HanoiTest::HanoiTest() : passedTests(0), failedTests(0) {}
 
-void HanoiTest::runAllTests() {
+int HanoiTest::runAllTests() {
     std::cout << "\n========== AVVIO TEST SUITE ==========\n" << std::endl;
 
     testPickupAndDrop();
@@ -21,6 +21,8 @@ void HanoiTest::runAllTests() {
     testResetState();
 
     printResults();
+
+    return 2;
 }
 
 
@@ -53,7 +55,7 @@ void HanoiTest::testPickupAndDrop() {
     // Simula rilascio su altro piolo
     game->specialCallback(KEY_RIGHT, 0, 0);
     game->specialCallback(KEY_DOWN, 0, 0);
-    // assertTrue(!game->hasHeldDisc(), "Non dovrebbe esserci più disco in mano");
+    // assertTrue(!game->hasHeldDisc(), "Non dovrebbe esserci piï¿½ disco in mano");
 
     std::cout << "[INFO] Test presa/rilascio completato (stato interno)" << std::endl;
 

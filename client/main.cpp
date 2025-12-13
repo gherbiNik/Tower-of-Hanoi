@@ -289,8 +289,15 @@ void printSceneGraphWithPosition(Node* node, int level = 0) {
 
 int main(int argc, char* argv[]) {
     HanoiTest testSuite;
-    testSuite.runAllTests();
+    int failures = testSuite.runAllTests();
 
+    if (failures > 0) {
+        std::cerr << "!!! TEST FALLITI: " << failures << " !!!" << std::endl;
+        return 1; 
+    }
+    std::cout << "Tutti i test passati." << std::endl;
+    
+    // --- INIZIO ---
 
     engine = &Eng::Base::getInstance();
     if (!engine->init(argc, argv)) return -1;
@@ -306,17 +313,17 @@ int main(int argc, char* argv[]) {
     engine->setDisplayCallback(displayCallback);
     engine->setReshapeCallback(reshapeCallback);
 
-   camera = new Camera("MainCam");
-   // --- SETUP VISTA FRONTALE ---
+    camera = new Camera("MainCam");
+    // --- SETUP VISTA FRONTALE ---
 
-    // Hard-coded
-   camera->translate(glm::vec3(0.0f, 50.0f, 50.0f));
-   camera->rotate(-25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
-   mainCameraHome = camera->getM(); // salva posizione iniziale della camera mobile
+        // Hard-coded
+    camera->translate(glm::vec3(0.0f, 50.0f, 50.0f));
+    camera->rotate(-25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+    mainCameraHome = camera->getM(); // salva posizione iniziale della camera mobile
 
-   list = new List();
-   reflectionList = new List();
-   root = new Node("Root");
+    list = new List();
+    reflectionList = new List();
+    root = new Node("Root");
 
     tavoloNode = ovoreader.readFile("tavolo.ovo", "texture/");
 
@@ -326,39 +333,39 @@ int main(int argc, char* argv[]) {
         root->addChild(camera);
 
 
-      // Opzionale: scala o sposta il tavolo se � troppo grande/piccolo
-      // tavoloNode->scale(glm::vec3(0.1f));
-      root = tavoloNode;
-      //Node* target = root->findByName("Spot001.Target");
-      //root->removeChild(root->findByName("Omni001"));
+        // Opzionale: scala o sposta il tavolo se � troppo grande/piccolo
+        // tavoloNode->scale(glm::vec3(0.1f));
+        root = tavoloNode;
+        //Node* target = root->findByName("Spot001.Target");
+        //root->removeChild(root->findByName("Omni001"));
 
-      Node* base_tavolo = root->findByName("base_tavolo");
-      Mesh* base_tavolo_mesh = dynamic_cast<Mesh*>(base_tavolo);
-      base_tavolo_mesh->getMaterial()->setTransparency(0.5f);
-      root->removeChild(root->findByName("Omni004"));
-      root->removeChild(root->findByName("Omni003"));
-      root->removeChild(root->findByName("Omni002"));
-      root->removeChild(root->findByName("Omni005"));
-      //root->removeChild(root->findByName("Omni001"));
+        Node* base_tavolo = root->findByName("base_tavolo");
+        Mesh* base_tavolo_mesh = dynamic_cast<Mesh*>(base_tavolo);
+        base_tavolo_mesh->getMaterial()->setTransparency(0.5f);
+        root->removeChild(root->findByName("Omni004"));
+        root->removeChild(root->findByName("Omni003"));
+        root->removeChild(root->findByName("Omni002"));
+        root->removeChild(root->findByName("Omni005"));
+        //root->removeChild(root->findByName("Omni001"));
 
 
-      //root->addChild(light);
-      root->addChild(camera);
-      printSceneGraphWithPosition(root);
-      // === INIZIALIZZAZIONE SCENA E LOGICA HANOI ===
+        //root->addChild(light);
+        root->addChild(camera);
+        printSceneGraphWithPosition(root);
+        // === INIZIALIZZAZIONE SCENA E LOGICA HANOI ===
         // Passiamo Camera e Engine al costruttore
-      hanoiGame = new Hanoi(camera, engine);
-      // Dalla root percorre il grafo
-      hanoiGame->initHanoiState(root);
+        hanoiGame = new Hanoi(camera, engine);
+        // Dalla root percorre il grafo
+        hanoiGame->initHanoiState(root);
 
-      std::cout << "\n--- STRUTTURA SCENA ---" << std::endl;
-      printSceneGraphWithPosition(root);
-      std::cout << "-----------------------\n" << std::endl;
+        std::cout << "\n--- STRUTTURA SCENA ---" << std::endl;
+        printSceneGraphWithPosition(root);
+        std::cout << "-----------------------\n" << std::endl;
 
-   }
-   else {
-      std::cerr << "Errore critico: impossibile caricare tavolo.ovo" << std::endl;
-   }
+    }
+    else {
+        std::cerr << "Errore critico: impossibile caricare tavolo.ovo" << std::endl;
+    }
 
 
 
