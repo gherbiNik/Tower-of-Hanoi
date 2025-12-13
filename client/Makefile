@@ -23,7 +23,7 @@ DEP_DEBUG =
 OUT_DEBUG = bin/Debug/client
 
 INC_RELEASE = $(INC)
-CFLAGS_RELEASE = $(CFLAGS) -O2
+CFLAGS_RELEASE = $(CFLAGS) -O2 -D_DEBUG
 RESINC_RELEASE = $(RESINC)
 RCFLAGS_RELEASE = $(RCFLAGS)
 LIBDIR_RELEASE = $(LIBDIR) -L../engine/bin/Release
@@ -56,7 +56,7 @@ all: debug release
 # --- TARGET TEST ---
 test: debug
 	@echo "--- Esecuzione Test ---"
-	./$(OUT_DEBUG)
+	./$(OUT_RELEASE)
 
 clean: clean_debug clean_release
 
