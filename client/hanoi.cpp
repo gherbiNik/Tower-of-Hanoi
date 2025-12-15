@@ -139,6 +139,7 @@ void Hanoi::initHanoiState(Node* root) {
         }
         pegStacks[bestPeg].push_back(ds);
     }
+
     /*
     // Ordina ciascun peg per Y crescente (dal basso al top)
     for (int p = 0; p < 3; ++p) {
@@ -154,7 +155,8 @@ void Hanoi::initHanoiState(Node* root) {
     // Calcola base e passo usando il peg piu' popolato
     int pegMax = 0;
     for (int p = 1; p < 3; ++p) {
-        if (pegStacks[p].size() > pegStacks[pegMax].size()) pegMax = p;
+        if (pegStacks[p].size() > pegStacks[pegMax].size()) 
+           pegMax = p;
     }
     if (pegStacks[pegMax].size() > 1) {
         float minY = glm::vec3(pegStacks[pegMax].front().node->getWorldFinalMatrix()[3]).y;
@@ -321,6 +323,7 @@ void Hanoi::saveState() {
     undoStack.push(state);
     
     // LOG: Mostra stato salvato (PRIMA dello spostamento, disco in mano)
+    /*
     std::cout << "[UNDO/REDO] Stato salvato (prima dello spostamento) - Stack[" << undoStack.size() << "] | ";
     std::cout << "Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
     if (heldDisc.has_value()) {
@@ -329,11 +332,12 @@ void Hanoi::saveState() {
         std::cout << " | Nessun disco in mano";
     }
     std::cout << std::endl;
+    */
     
     // Limita la dimensione dello stack
     if (undoStack.size() > MAX_UNDO_STATES) {
-        // Rimuove il più vecchio (bottom of stack)
-        std::stack<GameState> temp;
+        // Rimuove il più vecchio 
+        // std::stack<GameState> temp;
         while (undoStack.size() > MAX_UNDO_STATES) {
             undoStack.pop();
         }
@@ -344,6 +348,8 @@ void Hanoi::saveState() {
     if (!redoStack.empty()) {
         std::cout << "[UNDO/REDO] Redo stack pulito (nuova azione eseguita)" << std::endl;
     }
+
+
     clearRedoStack();
 }
 

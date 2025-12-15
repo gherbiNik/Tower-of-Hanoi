@@ -318,7 +318,7 @@ int main(int argc, char* argv[]) {
     camera = new PerspectiveCamera("MainCam", 45.0f, 800.0f / 600.0f, 1.0f, 5000.0f);
    // --- SETUP VISTA FRONTALE ---
 
-        // Hard-coded
+   // Hard-coded
     camera->translate(glm::vec3(0.0f, 50.0f, 50.0f));
     camera->rotate(-25.0f, glm::vec3(1.0f, 0.0f, 0.0f));
     mainCameraHome = camera->getM(); // salva posizione iniziale della camera mobile
