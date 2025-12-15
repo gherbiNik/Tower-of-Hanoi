@@ -15,7 +15,7 @@ void Hanoi::updateSelectedPeg(int delta) {
 }
 
 int Hanoi::parseDiscSize(const std::string& name) {
-    // Disco1 = pi� grande, Disco7 = pi� piccolo (rank alto = disco pi� grande)
+    // Disco1 = grande, Disco7 = piccolo
     if (name.rfind("Disco", 0) != 0) return 0;
     int n = std::atoi(name.c_str() + 5);
     if (n <= 0) return 0;
@@ -123,7 +123,7 @@ void Hanoi::initHanoiState(Node* root) {
         discs.push_back(ds);
     }
 
-    // Assegna a peg pi� vicino (XZ)
+    // Assegna a peg piu' vicino (XZ)
     for (auto& ds : discs) {
         glm::vec3 pos = glm::vec3(ds.node->getWorldFinalMatrix()[3]);
         float best = std::numeric_limits<float>::max();
@@ -139,7 +139,7 @@ void Hanoi::initHanoiState(Node* root) {
         }
         pegStacks[bestPeg].push_back(ds);
     }
-
+    /*
     // Ordina ciascun peg per Y crescente (dal basso al top)
     for (int p = 0; p < 3; ++p) {
         std::sort(pegStacks[p].begin(), pegStacks[p].end(),
@@ -149,8 +149,9 @@ void Hanoi::initHanoiState(Node* root) {
                 return ya < yb;
             });
     }
+    */
 
-    // Calcola base e passo usando il peg pi� popolato
+    // Calcola base e passo usando il peg piu' popolato
     int pegMax = 0;
     for (int p = 1; p < 3; ++p) {
         if (pegStacks[p].size() > pegStacks[pegMax].size()) pegMax = p;
@@ -187,11 +188,11 @@ void Hanoi::initHanoiState(Node* root) {
 }
 
 void Hanoi::pickupDisc() {
-    if (heldDisc.has_value()) return; // gi� in mano
+    if (heldDisc.has_value()) return; // gia' in mano
     auto& stack = pegStacks[selectedPeg];
     if (stack.empty()) return;
     
-    // NON salviamo qui: salviamo solo quando lo spostamento è completato (dropDisc)
+    // salviamo solo quando lo spostamento è completato (dropDisc)
     
     // Traccia da quale piolo è stato preso il disco
     heldDiscSourcePeg = selectedPeg;
@@ -204,7 +205,7 @@ void Hanoi::dropDisc() {
     if (!heldDisc.has_value()) return;
 
     auto& stack = pegStacks[selectedPeg];
-    // Vietato posare un disco pi� grande sopra uno pi� piccolo
+    // Vietato posare un disco piu' grande sopra uno piu' piccolo
     if (!stack.empty() && heldDisc->sizeRank > stack.back().sizeRank) {
         return;
     }
@@ -292,7 +293,7 @@ bool Hanoi::checkWinCondition() {
     }
 
     // Tutti i dischi devono essere sull'ultimo piolo (indice 0 -> Palo3 ).
-    // Nota: dipende dal POV (che camera stai usando)
+    // Nota: dipende da che camera stai usando
     if (pegStacks[0].size() == totalDiscs && totalDiscs > 0) {
         return true; // == 2 per test
     }
@@ -397,7 +398,7 @@ void Hanoi::restoreState(const GameState& state) {
         heldDisc.reset();
         heldDiscSourcePeg = -1;
         
-        std::cout << "[RESTORE] Disco in mano riposizionato sul piolo selezionato " << state.selectedPeg << std::endl;
+        //std::cout << "[RESTORE] Disco in mano riposizionato sul piolo selezionato " << state.selectedPeg << std::endl;
     }
     
     // Ripristina altri stati
@@ -410,11 +411,12 @@ void Hanoi::restoreState(const GameState& state) {
 
 void Hanoi::undo() {
     if (undoStack.empty()) {
-        std::cout << "[UNDO] Nessuno stato da annullare (stack vuoto)" << std::endl;
+        //std::cout << "[UNDO] Nessuno stato da annullare (stack vuoto)" << std::endl;
         return; // Niente da fare
     }
     
     // LOG: Stato corrente prima di undo
+    /*
     std::cout << "[UNDO] PRIMA - Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
     if (heldDisc.has_value()) {
         std::cout << " | Disco in mano: rank " << heldDisc->sizeRank;
@@ -422,6 +424,7 @@ void Hanoi::undo() {
         std::cout << " | Nessun disco in mano";
     }
     std::cout << " | UndoStack[" << undoStack.size() << "] RedoStack[" << redoStack.size() << "]" << std::endl;
+    */
     
     // Salva stato corrente in redo stack
     GameState currentState;
@@ -446,7 +449,7 @@ void Hanoi::undo() {
     GameState previousState = undoStack.top();
     undoStack.pop();
     restoreState(previousState);
-    
+    /*
     // LOG: Stato dopo undo
     std::cout << "[UNDO] DOPO  - Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
     if (heldDisc.has_value()) {
@@ -455,14 +458,16 @@ void Hanoi::undo() {
         std::cout << " | Nessun disco in mano";
     }
     std::cout << " | UndoStack[" << undoStack.size() << "] RedoStack[" << redoStack.size() << "]" << std::endl;
+    */
 }
 
 void Hanoi::redo() {
     if (redoStack.empty()) {
-        std::cout << "[REDO] Nessuno stato da ripristinare (stack vuoto)" << std::endl;
+        //std::cout << "[REDO] Nessuno stato da ripristinare (stack vuoto)" << std::endl;
         return; // Niente da fare
     }
     
+    /*
     // LOG: Stato corrente prima di redo
     std::cout << "[REDO] PRIMA - Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
     if (heldDisc.has_value()) {
@@ -471,6 +476,7 @@ void Hanoi::redo() {
         std::cout << " | Nessun disco in mano";
     }
     std::cout << " | UndoStack[" << undoStack.size() << "] RedoStack[" << redoStack.size() << "]" << std::endl;
+    */
     
     // Salva stato corrente in undo stack
     GameState currentState;
@@ -495,7 +501,9 @@ void Hanoi::redo() {
     redoStack.pop();
     restoreState(nextState);
     
+
     // LOG: Stato dopo redo
+    /*
     std::cout << "[REDO] DOPO  - Peg0:" << pegStacks[0].size() << " Peg1:" << pegStacks[1].size() << " Peg2:" << pegStacks[2].size();
     if (heldDisc.has_value()) {
         std::cout << " | Disco in mano: rank " << heldDisc->sizeRank;
@@ -503,4 +511,5 @@ void Hanoi::redo() {
         std::cout << " | Nessun disco in mano";
     }
     std::cout << " | UndoStack[" << undoStack.size() << "] RedoStack[" << redoStack.size() << "]" << std::endl;
+    */
 }

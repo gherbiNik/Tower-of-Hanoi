@@ -37,14 +37,12 @@ void Material::render() {
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, glm::value_ptr(glm::vec4(specular, transparency)));
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, glm::value_ptr(glm::vec4(emissione, transparency)));
 	glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+
 	// Gestione Texture
 	if (texture) {
         glEnable(GL_TEXTURE_2D);
-        
-        // --- AGGIUNTA FONDAMENTALE PER TEXTURE TRASPARENTI ---
         // Dice a OpenGL: "Moltiplica il colore della texture con il colore (e l'alpha) del materiale"
         glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); 
-        // -----------------------------------------------------
 
         texture->render();
     } else {

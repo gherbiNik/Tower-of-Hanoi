@@ -34,12 +34,7 @@ glm::vec3 InfiniteLight::getDirection() const {
 }
 
 void InfiniteLight::render() {
-    if (lightContextID < 0) return;
-
-    glEnable(lightContextID);
-    glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
-    glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
-    glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
+    Light::render();
 
     // Luce direzionale: w=0 nel vettore posizione
     glLightfv(lightContextID, GL_POSITION, glm::value_ptr(getPosition()));

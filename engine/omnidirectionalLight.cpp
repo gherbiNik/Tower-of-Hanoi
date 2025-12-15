@@ -31,13 +31,12 @@ float OmnidirectionalLight::getCutoff() const
 
 void OmnidirectionalLight::render()
 {
-    if (lightContextID < 0) return;
+    Light::render();
+    
 
-    glEnable(lightContextID);
-    glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
-    glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
-    glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
-
+    // Usiamo (0,0,0,1) perché la ModelView Matrix (caricata dalla List)
+    // ha già spostato il "cursore" nel punto esatto della luce.
+    // se usassimo glm::value_ptr(position) posizione sarebbe currentMatrix * position
     GLfloat zeroPos[] = { 0.0f, 0.0f, 0.0f, 1.0f };
     glLightfv(lightContextID, GL_POSITION, zeroPos);
 

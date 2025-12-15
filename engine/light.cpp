@@ -45,5 +45,4 @@ void Light::render() {
     glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(ambient));
     glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(diffuse));
     glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(specular));
-    glLightfv(lightContextID, GL_POSITION, glm::value_ptr(position));
 }

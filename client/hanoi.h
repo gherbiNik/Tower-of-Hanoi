@@ -86,7 +86,7 @@ private:
     // Undo/Redo stacks
     std::stack<GameState> undoStack;
     std::stack<GameState> redoStack;
-    static constexpr int MAX_UNDO_STATES = 50;
+    static constexpr int MAX_UNDO_STATES = 150;
 
     // Metodi di logica interna
     void updateSelectedPeg(int delta);

@@ -9,8 +9,8 @@ SpotLight::SpotLight() : Light(), spotExponent(0.0f)
 SpotLight::SpotLight(const std::string& name, const glm::mat4& matrix,
    const glm::vec3& ambient, const glm::vec3& diffuse,
    const glm::vec3& specular, const glm::vec3& dir,
-   float cutoff, float exponent) // <--- NUOVO PARAMETRO
-   : Light(name, matrix), spotExponent(exponent) // <--- INIZIALIZZA QUI
+   float cutoff, float exponent) 
+   : Light(name, matrix), spotExponent(exponent) 
 {
    setAmbient(glm::vec4(ambient, 1.0f));
    setDiffuse(glm::vec4(diffuse, 1.0f));
@@ -61,23 +61,17 @@ float SpotLight::getSpotExponent() const
 
 void SpotLight::render()
 {
-   if (lightContextID < 0) return;
+   Light::render();
 
-   glEnable(lightContextID);
-   glLightfv(lightContextID, GL_AMBIENT, glm::value_ptr(getAmbient()));
-   glLightfv(lightContextID, GL_DIFFUSE, glm::value_ptr(getDiffuse()));
-   glLightfv(lightContextID, GL_SPECULAR, glm::value_ptr(getSpecular()));
-
-   // --- FIX POSIZIONE ---
    // Usiamo (0,0,0,1) perché la ModelView Matrix (caricata dalla List)
    // ha già spostato il "cursore" nel punto esatto della luce.
+   // se usassimo glm::value_ptr(position) sarebbe più in alto
    GLfloat zeroPos[] = { 0.0f, 0.0f, 0.0f, 1.0f };
    glLightfv(lightContextID, GL_POSITION, zeroPos);
 
    
-   // La ModelView Matrix contiene già la rotazione necessaria per puntare al target.
-   GLfloat defaultDir[] = { 0.0f, -1.0f, 0.0f };
-   glLightfv(lightContextID, GL_SPOT_DIRECTION, defaultDir);
+   
+   glLightfv(lightContextID, GL_SPOT_DIRECTION, glm::value_ptr(direction));
 
    // Parametri Spot
    glLightf(lightContextID, GL_SPOT_CUTOFF, cutoff);

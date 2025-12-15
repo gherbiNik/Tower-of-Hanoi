@@ -35,11 +35,14 @@ Texture::Texture(const std::string& name, const std::string& filepath)
    FreeImage_Unload(bitmap);
 
    if (pImage) {
+      // perchè immagini sono in DDS
+      FreeImage_FlipVertical(pImage);
+
       int nWidth = FreeImage_GetWidth(pImage);
       int nHeight = FreeImage_GetHeight(pImage);
 
       // 4. Carica i dati nella GPU
-      // Nota: FreeImage usa BGRA, quindi usiamo GL_BGRA_EXT
+      // FreeImage usa BGRA -> usiamo GL_BGRA_EXT
       glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, nWidth, nHeight, 0,
          GL_BGRA_EXT, GL_UNSIGNED_BYTE, (void*)FreeImage_GetBits(pImage));
 
@@ -47,7 +50,7 @@ Texture::Texture(const std::string& name, const std::string& filepath)
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-      // Opzionale: Clamping per evitare ripetizioni strane sui bordi
+      // Clamping per evitare ripetizioni strane sui bordi
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 

@@ -13,7 +13,6 @@ struct TextRequest {
     float r, g, b;
 };
 
-// --- PIMPL STRUCTURE ---
 struct Eng::Base::Reserved
 {
     bool initFlag = false;
@@ -150,7 +149,7 @@ void Eng::Base::render() {
     glLoadMatrixf(glm::value_ptr(reserved->currentCamera->getProjectionMatrix()));
 
     glm::mat4 viewMatrix = reserved->currentCamera->getInvCameraMatrix();
-
+    // prima questa se no sarebbe sopra il tavolo riflesso
     if (reserved->reflectionList) {
         glFrontFace(GL_CW);
         reserved->reflectionList->render(viewMatrix);

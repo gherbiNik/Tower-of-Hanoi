@@ -29,7 +29,7 @@ Eng::Base* engine;
 Camera* camera;
 List* list;
 List* reflectionList = nullptr;
-const float FLOOR_HEIGHT = 10.0f; // Leggermente sopra lo 0 per evitare flickering
+std::vector<Node*> reflectionNodesCache;
 Node* root;
 OvoReader ovoreader{};
 Node* tavoloNode;
@@ -60,7 +60,6 @@ void specialCallback(int key, int x, int y) {
 
 glm::mat4 getReflectionMatrix(float planeHeight) {
    glm::mat4 mat(1.0f);
-
    // 1. Sposta al piano
    mat = glm::translate(mat, glm::vec3(0.0f, planeHeight, 0.0f));
    // 2. Specchia l'asse Y
@@ -109,46 +108,19 @@ void displayCallback() {
         drawCenteredText("Premi [R] per ricominciare", -30.0f, 1.0f, 1.0f, 1.0f); // Bianco
     }
 
-    if (reflectionList) {
+    if(reflectionList) {
        reflectionList->clear();
 
-       // 1. Definiamo il piano del tavolo
-       // Deve coincidere con la superficie superiore del tavolo.
-       // Se la base della torre è appoggiata sopra, prendiamo la sua Y.
        float tableHeight = 16.5f;
-
-       // 2. Calcola matrice di riflessione
        glm::mat4 reflectMat = getReflectionMatrix(tableHeight);
 
-       // 3. Aggiungi gli oggetti da specchiare
-       // Cerchiamo la "Base" e i dischi/pioli.
-       // Se sono tutti figli di un nodo comune (es. "Tavolo" o "HanoiRoot"), basta quello.
-       // Altrimenti li aggiungiamo uno per uno o tramite ricerca.
-
-       // Aggiungiamo la Base della torre
-       Node* baseNode = root->findByName("Base");
-       if (baseNode) reflectionList->pass(baseNode, reflectMat);
-
-       // Aggiungiamo i 3 Pali
-       for (int i = 1; i <= 3; i++) {
-          std::string nome = "Palo" + std::to_string(i);
-          Node* palo = root->findByName(nome);
-          if (palo) reflectionList->pass(palo, reflectMat);
+       // USIAMO LA CACHE 
+       for (Node* node : reflectionNodesCache) {
+          if (node) {
+             reflectionList->pass(node, reflectMat);
+          }
        }
 
-       // Aggiungiamo i 7 Dischi
-       for (int i = 1; i <= 7; i++) {
-          std::string nome = "Disco" + std::to_string(i);
-          Node* disco = root->findByName(nome);
-          if (disco) reflectionList->pass(disco, reflectMat);
-       }
-
-       for (int i = 1; i <= 5; i++) {
-          std::string nome = "Omni00" + std::to_string(i);
-          Node* luce = root->findByName(nome);
-          if (luce) reflectionList->pass(luce, reflectMat);
-       }
-       // 4. Passa all'engine
        engine->setReflectionList(reflectionList);
     }
 
@@ -238,6 +210,30 @@ void keyboardCallback(unsigned char key, int x, int y) {
             hanoiGame = new Hanoi(camera, engine);
             hanoiGame->initHanoiState(root);
 
+            reflectionNodesCache.clear();
+
+            // Cache Base
+            Node* baseNode = root->findByName("Base");
+            if (baseNode) reflectionNodesCache.push_back(baseNode);
+
+            // Cache Pali
+            for (int i = 1; i <= 3; i++) {
+               Node* palo = root->findByName("Palo" + std::to_string(i));
+               if (palo) reflectionNodesCache.push_back(palo);
+            }
+
+            // Cache Dischi
+            for (int i = 1; i <= 7; i++) {
+               Node* disco = root->findByName("Disco" + std::to_string(i));
+               if (disco) reflectionNodesCache.push_back(disco);
+            }
+
+            // Cache Luci
+            for (int i = 1; i <= 5; i++) {
+               Node* luce = root->findByName("Omni00" + std::to_string(i));
+               if (luce) reflectionNodesCache.push_back(luce);
+            }
+
 
 
         }
@@ -281,6 +277,7 @@ void reshapeCallback(int width, int height) {
     }
 }
 
+// per debuggare 
 void printSceneGraphWithPosition(Node* node, int level = 0) {
     if (!node) return;
     std::string indent(level * 4, ' ');
@@ -307,7 +304,7 @@ int main(int argc, char* argv[]) {
     engine = &Eng::Base::getInstance();
     if (!engine->init(argc, argv)) return -1;
 
-    engine->createWindow(800, 600, 100, 100, "Tower of Hanoi - Logic Refactored");
+    engine->createWindow(800, 600, 100, 100, "Tower of Hanoi");
     engine->enableFPS();
 
 
@@ -338,8 +335,6 @@ int main(int argc, char* argv[]) {
         root->addChild(camera);
 
 
-        // Opzionale: scala o sposta il tavolo se � troppo grande/piccolo
-        // tavoloNode->scale(glm::vec3(0.1f));
         root = tavoloNode;
         //Node* target = root->findByName("Spot001.Target");
         //root->removeChild(root->findByName("Omni001"));
@@ -353,6 +348,19 @@ int main(int argc, char* argv[]) {
         //root->removeChild(root->findByName("Omni005"));
         //root->removeChild(root->findByName("Omni001"));
 
+        // TESTING TROPPE LUCI
+        /*
+        OmnidirectionalLight*  o1 = new OmnidirectionalLight();
+        OmnidirectionalLight* o2 = new OmnidirectionalLight();
+        OmnidirectionalLight* o3 = new OmnidirectionalLight();
+        OmnidirectionalLight* o4 = new OmnidirectionalLight();
+        root->addChild(o1);
+        root->addChild(o2);
+        root->addChild(o3);
+        root->addChild(o4);
+        */
+
+
 
         //root->addChild(light);
         root->addChild(camera);
@@ -362,6 +370,30 @@ int main(int argc, char* argv[]) {
         hanoiGame = new Hanoi(camera, engine);
         // Dalla root percorre il grafo
         hanoiGame->initHanoiState(root);
+        reflectionNodesCache.clear();
+
+        // Torre riflessa
+        // Cache Base
+        Node* baseNode = root->findByName("Base");
+        if (baseNode) reflectionNodesCache.push_back(baseNode);
+
+        // Cache Pali
+        for (int i = 1; i <= 3; i++) {
+           Node* palo = root->findByName("Palo" + std::to_string(i));
+           if (palo) reflectionNodesCache.push_back(palo);
+        }
+
+        // Cache Dischi
+        for (int i = 1; i <= 7; i++) {
+           Node* disco = root->findByName("Disco" + std::to_string(i));
+           if (disco) reflectionNodesCache.push_back(disco);
+        }
+
+        // Cache Luci
+        for (int i = 1; i <= 5; i++) {
+           Node* luce = root->findByName("Omni00" + std::to_string(i));
+           if (luce) reflectionNodesCache.push_back(luce);
+        }
 
         std::cout << "\n--- STRUTTURA SCENA ---" << std::endl;
         printSceneGraphWithPosition(root);
