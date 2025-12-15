@@ -1,93 +1,80 @@
-# Gruppo_15
+# 3D Tower of Hanoi - Computer Graphics Project
+
+This project is a 3D interactive implementation of the classic "Tower of Hanoi" mathematical puzzle, developed in C++ using **OpenGL** and **GLUT**. The graphics engine was built from scratch to handle 3D scenes, lighting, textures, and complex game logic.
+
+## Key Features
+
+The project meets and exceeds the Computer Graphics course requirements through the following features:
+
+### Gameplay & Logic
+* **Complete Game Logic**: Rigorous implementation of Tower of Hanoi rules (e.g., larger disks cannot be placed on smaller ones).
+* **Interactive Selection**: Intuitive keyboard control system to select pegs, pick up, and drop disks.
+* **Undo/Redo System**: Stack-based (LIFO) system allowing moves to be undone (`Undo`) and redone (`Redo`), saving the full game state.
+* **Reset**: Functionality to reload the entire scene and initial state.
+
+### Rendering & Graphics
+* **Structured 3D Scene**: Asset and scene loading via `.ovo` format, with textures mapped onto the table and environment.
+* **Advanced Lighting**:
+    * **Static Lights**: Omnidirectional lights for ambient illumination.
+    * **Dynamic Light**: An **interactive Spotlight** that follows the player's selection, illuminating the active peg and providing immediate visual feedback.
+* **Planar Reflections**: Real-time specular reflections on the table surface (implemented using `glFrontFace` inversion and reflection matrices).
+* **Optimization**: Stable framerate consistently above 24 FPS (displayed on screen).
+
+### Camera Management
+* **Free Camera**: Free movement in 3D space ("Fly" mode) with WASD controls for translation and rotation.
+* **Camera Presets**: 4 predefined viewpoints (Front, Side, Top-Down, Isometric) for optimal puzzle viewing.
+
+---
+
+## ⌨️ Controls
+
+### Game Controls
+| Key | Action |
+| :--- | :--- |
+| **Left / Right Arrow** | Change selected peg (cyclic) |
+| **Up Arrow** | Pick up disk from current peg |
+| **Down Arrow** | Drop disk on current peg |
+| **U** | **Undo**: Revert the last move |
+| **Y** | **Redo**: Restore the last undone move |
+| **R** | **Reset**: Restart game and reload scene |
+| **ESC** | Exit application |
+
+### Camera Controls
+| Key | Action |
+| :--- | :--- |
+| **1, 2, 3, 4** | Switch to Camera Presets |
+| **P** | Switch to Main Camera (Free Move) |
+| **M** | Toggle **Movement** / **Rotation** mode |
+| **W, A, S, D** | Move or Rotate camera (based on Mode M) |
+| **Q, E** | Vertical movement / Roll |
+
+---
+
+## 🛠️echnical Architecture
+
+The project is built on a modular architecture:
+
+1.  **Engine (Core)**:
+    * Uses the **Singleton** pattern for global management and the **PIMPL** (Pointer to Implementation) pattern to hide low-level GLUT/OpenGL details.
+    * Manages the rendering loop, input callbacks, and FPS calculation.
+
+2.  **Scene Graph**:
+    * Hierarchical node management (Mesh, Lights, Cameras) via the `Node` class.
+    * Dynamic scene parsing: the code automatically identifies pegs and disks by analyzing node names in the 3D file (`Palo1`, `Disco1`, etc.).
+
+3.  **Game Logic (`Hanoi` class)**:
+    * Logically separated from rendering.
+    * Manages disk state, move validation, and history for undo/redo.
+    * Updates 3D model transformation matrices to reflect the logical state.
+
+---
+
+## System Requirements
+* **Libraries**: OpenGL, FreeGLUT, FreeImage, GLM.
+* **Compiler**: C++ compiler compatible with C++17.
+* **Hardware**: Graphics card with standard OpenGL support.
+
+## In-game screenshot
+<img width="750" height="550" alt="image" src="https://github.com/user-attachments/assets/51381c63-7353-4fab-b606-38b01a2ba1bd" />
 
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab-edu.supsi.ch/dti-isin/labingsw/labingsw02/2025-2026/cg/Gruppo_15.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-- [ ] [Set up project integrations](https://gitlab-edu.supsi.ch/dti-isin/labingsw/labingsw02/2025-2026/cg/Gruppo_15/-/settings/integrations)
-
-## Collaborate with your team
-
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
