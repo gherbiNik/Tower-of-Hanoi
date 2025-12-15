@@ -45,7 +45,12 @@
 		</Linker>
 		<Unit filename="camera.cpp" />
 		<Unit filename="camera.h" />
+		<Unit filename="perspectiveCamera.cpp" />
+		<Unit filename="perspectiveCamera.h" />
+		<Unit filename="orthographicCamera.cpp" />
+		<Unit filename="orthographicCamera.h" />
 		<Unit filename="engine.cpp" />
+		<Unit filename="engine_test.cpp" />
 		<Unit filename="engine.h" />
 		<Unit filename="infiniteLight.cpp" />
 		<Unit filename="infiniteLight.h" />

@@ -45,9 +45,6 @@
 		<Unit filename="main.cpp" />
 		<Unit filename="hanoi.cpp" />
 		<Unit filename="hanoi.h" />
-		<Unit filename="HanoiTest.cpp" />
-		<Unit filename="HanoiTest.h" />
-
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
