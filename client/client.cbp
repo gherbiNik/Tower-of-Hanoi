@@ -43,6 +43,8 @@
 			<Add library="engine" />
 		</Linker>
 		<Unit filename="main.cpp" />
+		<Unit filename="hanoi.cpp" />
+		<Unit filename="hanoi.h" />
 		<Extensions />
 	</Project>
 </CodeBlocks_project_file>
