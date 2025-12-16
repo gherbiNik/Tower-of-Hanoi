@@ -26,7 +26,7 @@ The project meets and exceeds the Computer Graphics course requirements through 
 
 ---
 
-## ⌨️ Controls
+## Controls
 
 ### Game Controls
 | Key | Action |
@@ -50,7 +50,7 @@ The project meets and exceeds the Computer Graphics course requirements through 
 
 ---
 
-## 🛠️echnical Architecture
+## Technical Architecture
 
 The project is built on a modular architecture:
 
